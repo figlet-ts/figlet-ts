@@ -1,0 +1,66 @@
+-- Font Header Info --
+
+Raw Header Line           :  flf2a$ 6 5 76 15 14 1 16271
+Signature                 :  flf2a
+Hardblank Character       :  36
+Font Height               :  6
+Font Baseline             :  5
+Max Character Length      :  76
+Old Layout                :  15
+# Comment Lines           :  14
+Print Direction           :  Right to Left
+Full Layout               :  16271
+Code Tag Count            :  39
+
+-- Font Glyph Info --
+
+Glyph Count               :  134
+Empty Glyph Count         :  0
+Code Tagged Glyphs Count  :  39
+
+Comments:
+
+    Ivrit (Hebrew) Unicode font assembled by John Cowan <cowan@ccil.org>
+    Latin chars from  Standard by G. Chappell & Ian Chai
+    Hebrew chars from Jerusalem by Gedaliah Friedenberg <gfrieden@nyx.cs.du.edu>
+            Use "ilhebrew.flc" for Hebrew keyboard mapping
+            Use "ushebrew.flc" for U.S.-style keyboard mapping ("febrew" script)
+            Use "8859-8.flc" for ISO 8859-8 text
+            Or use UTF-8
+    WARNING! FIGfonts aren't bidirectional; this is strictly right-to-left 
+            (by default) even for the Latin characters.
+    figlet release 2.2 -- November 1996
+    
+    Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
+    supported by FIGlet and FIGWin.  May also be slightly modified for better use
+    of new full-width/kern/smush alternatives, but default output is NOT changed.
+
+
+-- General Layout Info --
+
+Print direction                       :  Right to Left
+Rendering width                       :  80
+
+-- Horizontal Layout Rules --
+
+Horizontal Kerning (aka Fitting)?     :  false
+Horizontal Smushing?                  :  true
+Horizontal Universal Smushing?        :  false
+
+Horizontal Equal Character Smushing?  :  true
+Horizontal Underscore Smushing?       :  true
+Horizontal Hierarchy Smushing?        :  true
+Horizontal Opposite Pair Smushing?    :  true
+Horizontal Big X Smushing?            :  false
+Horizontal Hardblank Smushing?        :  false
+
+-- Vertical Layout Rules --
+
+Vertical Kerning (aka Fitting)?       :  true
+Vertical Smushing?                    :  false
+Vertical Universal Smushing?          :  false
+
+Vertical Equal Character Smushing?    :  true
+Vertical Underscore Smushing?         :  true
+Vertical Hierarchy Smushing?          :  true
+Vertical Horizontal Line Smushing?    :  true

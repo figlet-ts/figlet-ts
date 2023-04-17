@@ -1,0 +1,22 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "include": ["src/**/*.ts", "rollup.config.ts"],
+    "exclude": ["node_modules"],
+    "compilerOptions": {
+        "module": "ES2022",
+        "esModuleInterop": true,
+        "declaration": true,
+        "declarationDir": "./dist/types",
+        "declarationMap": true,
+        "sourceMap": true
+    },
+    "ts-node": {
+        "esm": true,
+        "compilerOptions": {
+            "module": "ES2022",
+            "esModuleInterop": true,
+            "moduleResolution": "Node",
+            "sourceMap": true
+        }
+    }
+}

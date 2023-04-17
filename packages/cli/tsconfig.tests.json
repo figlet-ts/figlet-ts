@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.json",
+    "include": ["tests/**/*.ts"],
+    "compilerOptions": {
+        "sourceMap": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "allowJs": true
+    }
+}

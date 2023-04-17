@@ -1,0 +1,65 @@
+{
+    "name": "@figlet-ts/fonts",
+    "author": "Andrew B. Dicks",
+    "license": "MIT",
+    "version": "0.3.1",
+    "description": "Bundle of font files for use alongside the figlet-ts lib.  Designed to be tree-shaken to reduce size.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/figlet-ts/figlet-ts.git",
+        "directory": "packages/fonts"
+    },
+    "keywords": [
+        "figlet",
+        "figlet-ts",
+        "figlet-fonts",
+        "fonts",
+        "ascii",
+        "ascii-font",
+        "ascii-art"
+    ],
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE"
+    ],
+    "source": "src/index.ts",
+    "main:": "dist/fonts.cjs",
+    "module": "dist/fonts.mjs",
+    "browser": "dist/fonts.mjs",
+    "types": "dist/fonts.d.ts",
+    "type": "module",
+    "sideEffects": false,
+    "devDependencies": {
+        "@andrewdicks/rollup-plugin-copy-files-plus": "^1.0.1",
+        "@rollup/plugin-terser": "^0.4.1",
+        "@rollup/plugin-typescript": "^11.1.0",
+        "@types/jest": "^29.5.0",
+        "@types/node": "^18.15.11",
+        "@typescript-eslint/eslint-plugin": "^5.58.0",
+        "eslint": "^8.38.0",
+        "eslint-config-prettier": "^8.8.0",
+        "eslint-config-standard-with-typescript": "^34.0.1",
+        "eslint-plugin-import": "^2.27.5",
+        "eslint-plugin-n": "^15.7.0",
+        "eslint-plugin-promise": "^6.1.1",
+        "prettier": "^2.8.7",
+        "prettier-plugin-organize-imports": "^3.2.2",
+        "rimraf": "^5.0.0",
+        "rollup-plugin-dts": "^5.3.0",
+        "rollup-plugin-gzip": "^3.1.0"
+    },
+    "scripts": {
+        "prettier:check": "prettier --check .",
+        "prettier:fix": "prettier --write .",
+        "lint:check": "eslint --cache --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
+        "lint:fix": "eslint --cache --fix --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
+        "check": "npm run lint:check && npm run prettier:check",
+        "fix": "npm run lint:fix && npm run prettier:fix",
+        "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf dist/types",
+        "build:production": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript --environment BUILD:production && rimraf dist/types",
+        "prepare": "npm run build:production",
+        "test": "node --experimental-vm-modules --no-warnings ../../node_modules/jest/bin/jest.js"
+    }
+}

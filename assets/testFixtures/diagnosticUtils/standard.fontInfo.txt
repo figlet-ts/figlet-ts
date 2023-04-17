@@ -1,0 +1,63 @@
+-- Font Header Info --
+
+Raw Header Line           :  flf2a$ 6 5 16 15 11 0 24463
+Signature                 :  flf2a
+Hardblank Character       :  36
+Font Height               :  6
+Font Baseline             :  5
+Max Character Length      :  16
+Old Layout                :  15
+# Comment Lines           :  11
+Print Direction           :  Left to Right
+Full Layout               :  24463
+Code Tag Count            :  229
+
+-- Font Glyph Info --
+
+Glyph Count               :  324
+Empty Glyph Count         :  0
+Code Tagged Glyphs Count  :  229
+
+Comments:
+
+    Standard by Glenn Chappell & Ian Chai 3/93 -- based on Frank's .sig
+    Includes ISO Latin-1
+    figlet release 2.1 -- 12 Aug 1994
+    Modified for figlet 2.2 by John Cowan <cowan@ccil.org>
+      to add Latin-{2,3,4,5} support (Unicode U+0100-017F).
+    Permission is hereby given to modify this font, as long as the
+    modifier's name is placed on a comment line.
+    
+    Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
+    supported by FIGlet and FIGWin.  May also be slightly modified for better use
+    of new full-width/kern/smush alternatives, but default output is NOT changed.
+
+
+-- General Layout Info --
+
+Print direction                       :  Left to Right
+Rendering width                       :  80
+
+-- Horizontal Layout Rules --
+
+Horizontal Kerning (aka Fitting)?     :  false
+Horizontal Smushing?                  :  true
+Horizontal Universal Smushing?        :  false
+
+Horizontal Equal Character Smushing?  :  true
+Horizontal Underscore Smushing?       :  true
+Horizontal Hierarchy Smushing?        :  true
+Horizontal Opposite Pair Smushing?    :  true
+Horizontal Big X Smushing?            :  false
+Horizontal Hardblank Smushing?        :  false
+
+-- Vertical Layout Rules --
+
+Vertical Kerning (aka Fitting)?       :  false
+Vertical Smushing?                    :  true
+Vertical Universal Smushing?          :  false
+
+Vertical Equal Character Smushing?    :  true
+Vertical Underscore Smushing?         :  true
+Vertical Hierarchy Smushing?          :  true
+Vertical Horizontal Line Smushing?    :  true
