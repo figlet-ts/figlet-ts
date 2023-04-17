@@ -1,5 +1,11 @@
 # @figlet-ts/cli
 
+## 0.5.0
+
+### Minor Changes
+
+-   eb7b42a: Add 88 extra fonts to CLI release
+
 ## 0.4.0
 
 ### Minor Changes
