@@ -1,5 +1,11 @@
 # @figlet-ts/fonts
 
+## 0.4.0
+
+### Minor Changes
+
+-   86d41d2: Add 88 more publicly-availble fonts
+
 ## 0.3.1
 
 ### Patch Changes
