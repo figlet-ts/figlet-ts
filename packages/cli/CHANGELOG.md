@@ -1,5 +1,11 @@
 # @figlet-ts/cli
 
+## 0.5.1
+
+### Patch Changes
+
+-   54796dd: More defensive parsing of malformed FLF files
+
 ## 0.5.0
 
 ### Minor Changes

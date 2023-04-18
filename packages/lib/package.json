@@ -2,7 +2,7 @@
     "name": "@figlet-ts/lib",
     "author": "Andrew B. Dicks",
     "license": "MIT",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "description": "Core figlet-ts library",
     "repository": {
         "type": "git",
