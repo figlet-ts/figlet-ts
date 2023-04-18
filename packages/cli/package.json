@@ -9,6 +9,17 @@
         "url": "https://github.com/figlet-ts/figlet-ts.git",
         "directory": "packages/cli"
     },
+    "scripts": {
+        "prettier:check": "prettier --check .",
+        "prettier:fix": "prettier --write .",
+        "lint:check": "eslint --cache --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
+        "lint:fix": "eslint --cache --fix --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
+        "check": "npm run lint:check && npm run prettier:check",
+        "fix": "npm run lint:fix && npm run prettier:fix",
+        "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf dist/types",
+        "prepublishOnly": "npm run test && npm run build",
+        "test": "node --experimental-vm-modules --no-warnings ../../node_modules/jest/bin/jest.js"
+    },
     "keywords": [
         "figlet",
         "figlet-ts",
@@ -34,16 +45,6 @@
     "source": "src/index.ts",
     "module:": "dist/figlet-ts-cli.mjs",
     "type": "module",
-    "scripts": {
-        "prettier:check": "prettier --check .",
-        "prettier:fix": "prettier --write .",
-        "lint:check": "eslint --cache --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
-        "lint:fix": "eslint --cache --fix --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
-        "check": "npm run lint:check && npm run prettier:check",
-        "fix": "npm run lint:fix && npm run prettier:fix",
-        "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf dist/types",
-        "test": "node --experimental-vm-modules --no-warnings ../../node_modules/jest/bin/jest.js"
-    },
     "targets": {},
     "devDependencies": {
         "@andrewdicks/rollup-plugin-copy-files-plus": "^1.0.2",

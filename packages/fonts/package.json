@@ -9,6 +9,18 @@
         "url": "https://github.com/figlet-ts/figlet-ts.git",
         "directory": "packages/fonts"
     },
+    "scripts": {
+        "prettier:check": "prettier --check .",
+        "prettier:fix": "prettier --write .",
+        "lint:check": "eslint --cache --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
+        "lint:fix": "eslint --cache --fix --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
+        "check": "npm run lint:check && npm run prettier:check",
+        "fix": "npm run lint:fix && npm run prettier:fix",
+        "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf dist/types",
+        "build:production": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript --environment BUILD:production && rimraf dist/types",
+        "prepublishOnly": "npm run test && npm run build:production",
+        "test": "node --experimental-vm-modules --no-warnings ../../node_modules/jest/bin/jest.js"
+    },
     "keywords": [
         "figlet",
         "figlet-ts",
@@ -49,17 +61,5 @@
         "rimraf": "^5.0.0",
         "rollup-plugin-dts": "^5.3.0",
         "rollup-plugin-gzip": "^3.1.0"
-    },
-    "scripts": {
-        "prettier:check": "prettier --check .",
-        "prettier:fix": "prettier --write .",
-        "lint:check": "eslint --cache --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
-        "lint:fix": "eslint --cache --fix --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
-        "check": "npm run lint:check && npm run prettier:check",
-        "fix": "npm run lint:fix && npm run prettier:fix",
-        "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf dist/types",
-        "build:production": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript --environment BUILD:production && rimraf dist/types",
-        "prepare": "npm run build:production",
-        "test": "node --experimental-vm-modules --no-warnings ../../node_modules/jest/bin/jest.js"
     }
 }
