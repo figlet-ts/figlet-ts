@@ -104,21 +104,14 @@ export class FIGCharacter {
             let maxLineLength = 0;
 
             for (const line of characterLines) {
-                // Trim the last block of consecutive equal characters
-                let cursor = line.length - 1;
-                let terminatingCharacterCount = 0;
-                while (cursor > 0) {
-                    if (line[cursor--] === terminatingCharacter) {
-                        terminatingCharacterCount++;
-                    } else {
-                        break;
-                    }
-                }
-                if (terminatingCharacterCount === 0) {
+                const lineTerminationPoint = line.indexOf(terminatingCharacter);
+
+                if (lineTerminationPoint === -1) {
                     throw new FIGFontError(`Character line was not terminated with character ${terminatingCharacter}`);
                 }
+
                 const glyphLine: number[] = line
-                    .substring(0, line.length - terminatingCharacterCount)
+                    .substring(0, lineTerminationPoint)
                     .split('')
                     .map((c) => c.charCodeAt(0));
                 this._glyph.push(glyphLine);
