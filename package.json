@@ -18,7 +18,13 @@
         "fix": "npm run lint:fix && npm run prettier:fix",
         "test": "rimraf coverage && npm run test -ws",
         "build": "npm run build -ws",
-        "publish": "npm run publish -ws",
+        "build:fonts": "npm run build --workspace @figlet-ts/fonts",
+        "build:lib": "npm run build --workspace @figlet-ts/lib",
+        "build:cli": "npm run build --workspace @figlet-ts/lib && npm run build --workspace @figlet-ts/cli",
+        "publish:all": "npm run publish -ws",
+        "publish:fonts": "npm publish --workspace @figlet-ts/fonts",
+        "publish:lib": "npm publish --workspace @figlet-ts/lib",
+        "publish:cli": "npm run build --workspace @figlet-ts/lib && npm publish --workspace @figlet-ts/cli",
         "prepare": "husky install"
     },
     "devDependencies": {
