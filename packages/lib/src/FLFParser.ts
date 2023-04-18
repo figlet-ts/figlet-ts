@@ -1,5 +1,8 @@
-import { FIGCharacter } from './FIGCharacter';
-import { FIGFont } from './FIGFont';
+import {FIGCharacter} from './FIGCharacter';
+import {FIGFont} from './FIGFont';
+import {Debugger} from './utils/DebugUtil';
+
+const debug = Debugger.getNamespacedDebugger('FLFParser');
 
 export class FLFParseError extends Error {
     constructor(message: string) {
@@ -14,7 +17,8 @@ export class FLFParseErrorInvalidHeader extends FLFParseError {
 }
 
 export class FLFParseResult {
-    constructor(public font: FIGFont, public parseWarnings: string[]) {}
+    constructor(public font: FIGFont, public parseWarnings: string[]) {
+    }
 }
 
 export class FLFParser {
@@ -72,26 +76,42 @@ export class FLFParser {
             );
         }
 
-        // Parse all the mandatory characters
-        for (let i = 0; i < FLFParser.MANDATORY_FLF_CHARACTERS.length && splitFileContents.length - lineCursor > font.height; i++) {
-            // console.log(`Loading character ${FLFParser.MANDATORY_FLF_CHARACTERS[i]} / ${String.fromCharCode(FLFParser.MANDATORY_FLF_CHARACTERS[i])}`)
-            font.addFIGCharacter(
-                FIGCharacter.fromRequiredFIGCharacterString(FLFParser.MANDATORY_FLF_CHARACTERS[i], font.hardblankCharacter, splitFileContents.slice(lineCursor, lineCursor + font.height).join('\n'))
-            );
-            lineCursor += font.height;
-        }
-
-        // Parse all remaining lines (assuming they are code-tagged characters)
         let parsedCodeTaggedCharacterCount = 0;
-        while (splitFileContents.length - lineCursor >= 1 + font.height) {
-            parsedCodeTaggedCharacterCount++;
-            font.addFIGCharacter(FIGCharacter.fromCodeTaggedFIGCharacterString(font.hardblankCharacter, splitFileContents.slice(lineCursor, lineCursor + font.height + 1).join('\n')));
-            lineCursor += font.height + 1;
+
+        try {
+
+            // Parse all the mandatory characters
+            for (let i = 0; i < FLFParser.MANDATORY_FLF_CHARACTERS.length && splitFileContents.length - lineCursor > font.height; i++) {
+                // console.log(`Loading character ${FLFParser.MANDATORY_FLF_CHARACTERS[i]} / ${String.fromCharCode(FLFParser.MANDATORY_FLF_CHARACTERS[i])}`)
+                font.addFIGCharacter(
+                    FIGCharacter.fromRequiredFIGCharacterString(FLFParser.MANDATORY_FLF_CHARACTERS[i], font.hardblankCharacter, splitFileContents.slice(lineCursor, lineCursor + font.height).join('\n'))
+                );
+                lineCursor += font.height;
+            }
+
+            // Parse all remaining lines (assuming they are code-tagged characters)
+            while (splitFileContents.length - lineCursor >= 1 + font.height) {
+                parsedCodeTaggedCharacterCount++;
+                font.addFIGCharacter(FIGCharacter.fromCodeTaggedFIGCharacterString(font.hardblankCharacter, splitFileContents.slice(lineCursor, lineCursor + font.height + 1).join('\n')));
+                lineCursor += font.height + 1;
+            }
+
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                parseWarnings.push(
+                    `Error parsing character in FLF between lines ${lineCursor} and ${lineCursor + font.height}: ${e.message}`
+                );
+            }
         }
 
         if (parsedCodeTaggedCharacterCount !== font.codetagCount) {
             parseWarnings.push(`FLF Header indicated ${font.codetagCount} code-tagged characters, but the file contains ${parsedCodeTaggedCharacterCount}.`);
             font.codetagCount = parsedCodeTaggedCharacterCount;
+        }
+        
+        // Debug output
+        for (const s of parseWarnings) {
+            debug(s);
         }
 
         return new FLFParseResult(font, parseWarnings);

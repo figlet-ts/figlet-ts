@@ -1,4 +1,4 @@
-import { FLFParseErrorInvalidHeader, FLFParser } from '../../../src/FLFParser';
+import {FLFParseErrorInvalidHeader, FLFParser} from '../../../src/FLFParser';
 
 describe('Check FLF Parsing', () => {
     const invalidFLFFile: string = 'asdfsafd\nasfdjasdfkljasd';
@@ -35,12 +35,15 @@ describe('Check FLF Parsing', () => {
     });
 
     test('FLF with malformed code-tagged characters', () => {
-        expect(() => FLFParser.parse([validHeader, ...mandatoryLinesOnly, ...correctNumberOfMalformedOptionalLines].join(''))).toThrow(
-            'Cannot parse code tag line "NaN" as hexadecimal, octal nor decimal value'
+        expect(FLFParser.parse([validHeader, ...mandatoryLinesOnly, ...correctNumberOfMalformedOptionalLines].join(''))).toHaveProperty('parseWarnings',[
+            'Error parsing character in FLF between lines 715 and 722: Cannot parse code tag line "NaN" as hexadecimal, octal nor decimal value',
+                'FLF Header indicated 10 code-tagged characters, but the file contains 1.'
+            ]
         );
     });
 
     test('Well-formed FLF file', () => {
         expect(FLFParser.parse([validHeader, ...mandatoryLinesOnly, ...correctNumberOfWellFormedOptionalLines].join(''))).toHaveProperty('parseWarnings', []);
     });
+
 });
