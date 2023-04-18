@@ -1,5 +1,11 @@
 # @figlet-ts/lib
 
+## 0.4.0
+
+### Minor Changes
+
+-   54796dd: More defensive parsing of malformed FLF files
+
 ## 0.3.0
 
 ### Minor Changes
