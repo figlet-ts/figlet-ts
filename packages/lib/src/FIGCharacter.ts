@@ -100,16 +100,16 @@ export class FIGCharacter {
             this._isEmptyGlyph = true;
         } else {
             // Otherwise, it's not an empty glyph, and should have some characters within it...
-            
+
             let maxLineLength = 0;
-            
+
             for (const line of characterLines) {
                 const lineTerminationPoint = line.indexOf(terminatingCharacter);
 
                 if (lineTerminationPoint === -1) {
                     throw new FIGFontError(`Character line was not terminated with character ${terminatingCharacter}`);
                 }
-                
+
                 const glyphLine: number[] = line
                     .substring(0, lineTerminationPoint)
                     .split('')
