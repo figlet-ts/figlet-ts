@@ -40,7 +40,7 @@ Use it for:
 
 You will likely want to install this globally, so you can run it as a standard command-line tool in your shell.
 
-Note that it installs itself under the command-line aliases `figlet` and `figlet-ts`.  I have added the `figlet-ts` variant in case there is a conflict with an existing figlet installation.
+Note that it installs itself under the command-line aliases `figlet` and `figlet-ts`. I have added the `figlet-ts` variant in case there is a conflict with an existing figlet installation.
 
 ```bash
 # npm

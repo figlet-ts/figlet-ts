@@ -52,6 +52,7 @@
     "workspaces": [
         "packages/fonts",
         "packages/lib",
+        "packages/cli",
         "packages/figlet-ts"
     ]
 }
