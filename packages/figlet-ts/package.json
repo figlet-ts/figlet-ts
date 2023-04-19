@@ -1,9 +1,9 @@
 {
-    "name": "@figlet-ts/cli",
+    "name": "figlet-ts",
     "author": "Andrew B. Dicks",
     "license": "MIT",
     "version": "0.5.1",
-    "description": "CLI app for figlet-ts",
+    "description": "Figlet command-line application, authored in Typescript",
     "repository": {
         "type": "git",
         "url": "https://github.com/figlet-ts/figlet-ts.git",
