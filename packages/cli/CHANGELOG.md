@@ -1,5 +1,11 @@
 # @figlet-ts/cli
 
+## 0.6.0
+
+### Minor Changes
+
+-   b174883: Deprecate @figlet-ts/cli in favour of package name figlet-ts
+
 ## 0.5.1
 
 ### Patch Changes
