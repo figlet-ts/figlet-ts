@@ -16,6 +16,7 @@
         "lint:fix": "eslint --cache --fix --ext .ts src/**/*.ts tests/**/*.ts --no-error-on-unmatched-pattern",
         "check": "npm run lint:check && npm run prettier:check",
         "fix": "npm run lint:fix && npm run prettier:fix",
+        "clean": "rimraf dist",
         "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf dist/types",
         "prepublishOnly": "npm run test && npm run build",
         "test": "node --experimental-vm-modules --no-warnings ../../node_modules/jest/bin/jest.js"

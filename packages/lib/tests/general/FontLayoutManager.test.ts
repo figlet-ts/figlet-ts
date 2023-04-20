@@ -1,6 +1,27 @@
 import fs from 'fs';
 import path from 'path';
 import { FLFParser, FontLayoutManager } from '../../src';
+import { CanvasPixel } from '../../src/rendering/CanvasPixel';
+
+function testHorizontalSmush(flm: FontLayoutManager, leftChar: string, rightChar: string, hardblankChar: string): string | null {
+    const result = flm.getHorizontalSmushCharacter(new CanvasPixel(leftChar.charCodeAt(0)), new CanvasPixel(rightChar.charCodeAt(0)), hardblankChar.charCodeAt(0));
+
+    if (result) {
+        return String.fromCharCode(result.character);
+    }
+
+    return null;
+}
+
+function testVerticalSmush(flm: FontLayoutManager, leftChar: string, rightChar: string, hardblankChar: string): string | null {
+    const result = flm.getVerticalSmushCharacter(new CanvasPixel(leftChar.charCodeAt(0)), new CanvasPixel(rightChar.charCodeAt(0)), hardblankChar.charCodeAt(0));
+
+    if (result) {
+        return String.fromCharCode(result.character);
+    }
+
+    return null;
+}
 
 describe('Test Horizontal Equal Character Smushing', () => {
     const flm: FontLayoutManager = new FontLayoutManager();
@@ -9,47 +30,47 @@ describe('Test Horizontal Equal Character Smushing', () => {
 
     test('When Enabled:  Two hardblanks refuse to smush', () => {
         flm.horizontalSmushingRules.enableEqualCharacterSmushing();
-        expect(flm.getHorizontalSmushCharacter('$'.charCodeAt(0), '$'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '$', '$', '$')).toEqual(null);
     });
 
     test('When Enabled:  Two different characters refuse to smush', () => {
         flm.horizontalSmushingRules.enableEqualCharacterSmushing();
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '|', '/', '$')).toEqual(null);
     });
 
     test('When Enabled:  | and | resolve to |', () => {
         flm.horizontalSmushingRules.enableEqualCharacterSmushing();
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '|'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '|', '|', '$')).toEqual('|');
     });
 
     test('When Enabled:  X and X resolve to X', () => {
         flm.horizontalSmushingRules.enableEqualCharacterSmushing();
-        expect(flm.getHorizontalSmushCharacter('X'.charCodeAt(0), 'X'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('X'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, 'X', 'X', '$')).toEqual('X');
     });
 
     test('When Enabled:  / and / resolve to /', () => {
         flm.horizontalSmushingRules.enableEqualCharacterSmushing();
-        expect(flm.getHorizontalSmushCharacter('/'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('/'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '/', '/', '$')).toEqual('/');
     });
 
     test('When Unset:  / and / refuse to smush', () => {
         flm.horizontalSmushingRules.unsetEqualCharacterSmushing();
-        expect(flm.getHorizontalSmushCharacter('/'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '/', '/', '$')).toEqual(null);
     });
 
     test('When Disabled:  | and | refuse to smush', () => {
         flm.horizontalSmushingRules.disableEqualCharacterSmushing();
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '|'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '|', '|', '$')).toEqual(null);
     });
 
     test('When Disabled:  X and X refuse to smush', () => {
         flm.horizontalSmushingRules.disableEqualCharacterSmushing();
-        expect(flm.getHorizontalSmushCharacter('X'.charCodeAt(0), 'X'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, 'X', 'X', '$')).toEqual(null);
     });
 
     test('When Disabled:  / and / refuse to smush', () => {
         flm.horizontalSmushingRules.disableEqualCharacterSmushing();
-        expect(flm.getHorizontalSmushCharacter('/'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '/', '/', '$')).toEqual(null);
     });
 });
 
@@ -63,26 +84,26 @@ describe('Test Horizontal Underscore Smushing', () => {
     for (const c of underscoreReplacers) {
         test(`When Enabled:  _ and ${c} resolves to ${c}`, () => {
             flm.horizontalSmushingRules.enableUnderscoreSmushing();
-            expect(flm.getHorizontalSmushCharacter('_'.charCodeAt(0), c.charCodeAt(0), '$'.charCodeAt(0))).toEqual(c.charCodeAt(0));
+            expect(testHorizontalSmush(flm, '_', c, '$')).toEqual(c);
         });
         test(`When Enabled:  ${c} and _ resolves to ${c}`, () => {
             flm.horizontalSmushingRules.enableUnderscoreSmushing();
-            expect(flm.getHorizontalSmushCharacter(c.charCodeAt(0), '_'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(c.charCodeAt(0));
+            expect(testHorizontalSmush(flm, c, '_', '$')).toEqual(c);
         });
         test(`When Unset:  ${c} and _ refuse to smush`, () => {
             flm.horizontalSmushingRules.unsetUnderscoreSmushing();
-            expect(flm.getHorizontalSmushCharacter(c.charCodeAt(0), '_'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+            expect(testHorizontalSmush(flm, c, '_', '$')).toEqual(null);
         });
     }
 
     for (const c of underscoreReplacers) {
         test(`When Disabled:  _ and ${c} refuse to smush`, () => {
             flm.horizontalSmushingRules.disableUnderscoreSmushing();
-            expect(flm.getHorizontalSmushCharacter('_'.charCodeAt(0), c.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+            expect(testHorizontalSmush(flm, '_', c, '$')).toEqual(null);
         });
         test(`When Disabled:  ${c} and _ refuse to smush`, () => {
             flm.horizontalSmushingRules.disableUnderscoreSmushing();
-            expect(flm.getHorizontalSmushCharacter(c.charCodeAt(0), '_'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+            expect(testHorizontalSmush(flm, c, '_', '$')).toEqual(null);
         });
     }
 });
@@ -94,63 +115,63 @@ describe('Test Horizontal Hierarchy Smushing', () => {
 
     test('When Enabled:  | and / resolve to /', () => {
         flm.horizontalSmushingRules.enableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('/'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '|', '/', '$')).toEqual('/');
     });
     test('When Enabled:  \\ and [ resolve to [', () => {
         flm.horizontalSmushingRules.enableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter('\\'.charCodeAt(0), '['.charCodeAt(0), '$'.charCodeAt(0))).toEqual('['.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '\\', '[', '$')).toEqual('[');
     });
     test('When Enabled:  ] and { resolve to {', () => {
         flm.horizontalSmushingRules.enableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter(']'.charCodeAt(0), '{'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('{'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, ']', '{', '$')).toEqual('{');
     });
     test('When Enabled:  } and ( resolve to (', () => {
         flm.horizontalSmushingRules.enableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter('}'.charCodeAt(0), '('.charCodeAt(0), '$'.charCodeAt(0))).toEqual('('.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '}', '(', '$')).toEqual('(');
     });
     test('When Enabled:  ) and > resolve to >', () => {
         flm.horizontalSmushingRules.enableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter(')'.charCodeAt(0), '>'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('>'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, ')', '>', '$')).toEqual('>');
     });
     test('When Enabled:  | and > resolve to >', () => {
         flm.horizontalSmushingRules.enableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '>'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('>'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '|', '>', '$')).toEqual('>');
     });
     test('When Enabled:  ) and / resolve to )', () => {
         flm.horizontalSmushingRules.enableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter(')'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(')'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, ')', '/', '$')).toEqual(')');
     });
     test('When Unset:  ) and / refuse to smush', () => {
         flm.horizontalSmushingRules.unsetHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter(')'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, ')', '/', '$')).toEqual(null);
     });
     test('When Disabled:  | and / refuse to smush', () => {
         flm.horizontalSmushingRules.disableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '|', '/', '$')).toEqual(null);
     });
     test('When Disabled:  \\ and [ refuse to smush', () => {
         flm.horizontalSmushingRules.disableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter('\\'.charCodeAt(0), '['.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '\\', '[', '$')).toEqual(null);
     });
     test('When Disabled:  ] and { refuse to smush', () => {
         flm.horizontalSmushingRules.disableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter(']'.charCodeAt(0), '{'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, ']', '{', '$')).toEqual(null);
     });
     test('When Disabled:  } and ( refuse to smush', () => {
         flm.horizontalSmushingRules.disableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter('}'.charCodeAt(0), '('.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '}', '(', '$')).toEqual(null);
     });
     test('When Disabled:  ) and > refuse to smush', () => {
         flm.horizontalSmushingRules.disableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter(')'.charCodeAt(0), '>'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, ')', '>', '$')).toEqual(null);
     });
     test('When Disabled:  | and > refuse to smush', () => {
         flm.horizontalSmushingRules.disableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '>'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '|', '>', '$')).toEqual(null);
     });
     test('When Disabled:  ) and / refuse to smush', () => {
         flm.horizontalSmushingRules.disableHierarchySmushing();
-        expect(flm.getHorizontalSmushCharacter(')'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, ')', '/', '$')).toEqual(null);
     });
 });
 
@@ -161,55 +182,55 @@ describe('Test Horizontal Opposite Pair Smushing', () => {
 
     test('When Enabled:  [ and ] resolve to |', () => {
         flm.horizontalSmushingRules.enableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter('['.charCodeAt(0), ']'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '[', ']', '$')).toEqual('|');
     });
     test('When Enabled:  ] and [ resolve to |', () => {
         flm.horizontalSmushingRules.enableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter(']'.charCodeAt(0), '['.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, ']', '[', '$')).toEqual('|');
     });
     test('When Enabled:  { and } resolve to |', () => {
         flm.horizontalSmushingRules.enableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter('{'.charCodeAt(0), '}'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '{', '}', '$')).toEqual('|');
     });
     test('When Enabled:  } and { resolve to |', () => {
         flm.horizontalSmushingRules.enableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter('}'.charCodeAt(0), '{'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '}', '{', '$')).toEqual('|');
     });
     test('When Enabled:  ( and ) resolve to |', () => {
         flm.horizontalSmushingRules.enableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter('('.charCodeAt(0), ')'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '(', ')', '$')).toEqual('|');
     });
     test('When Enabled:  ) and ( resolve to |', () => {
         flm.horizontalSmushingRules.enableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter(')'.charCodeAt(0), '('.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, ')', '(', '$')).toEqual('|');
     });
     test('When Unset:  ) and ( refuse to smush', () => {
         flm.horizontalSmushingRules.unsetOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter(')'.charCodeAt(0), '('.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, ')', '(', '$')).toEqual(null);
     });
     test('When Disabled:  [ and ] refuse to smush', () => {
         flm.horizontalSmushingRules.disableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter('['.charCodeAt(0), ']'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '[', ']', '$')).toEqual(null);
     });
     test('When Disabled:  ] and [ refuse to smush', () => {
         flm.horizontalSmushingRules.disableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter(']'.charCodeAt(0), '['.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, ']', '[', '$')).toEqual(null);
     });
     test('When Disabled:  { and } refuse to smush', () => {
         flm.horizontalSmushingRules.disableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter('{'.charCodeAt(0), '}'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '{', '}', '$')).toEqual(null);
     });
     test('When Disabled:  } and { refuse to smush', () => {
         flm.horizontalSmushingRules.disableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter('}'.charCodeAt(0), '{'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '}', '{', '$')).toEqual(null);
     });
     test('When Disabled:  ( and ) refuse to smush', () => {
         flm.horizontalSmushingRules.disableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter('('.charCodeAt(0), ')'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '(', ')', '$')).toEqual(null);
     });
     test('When Disabled:  ) and ( refuse to smush', () => {
         flm.horizontalSmushingRules.disableOppositePairSmushing();
-        expect(flm.getHorizontalSmushCharacter(')'.charCodeAt(0), '('.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, ')', '(', '$')).toEqual(null);
     });
 });
 
@@ -220,35 +241,35 @@ describe('Test Horizontal Big X Smushing', () => {
 
     test('When Enabled:  / and \\ resolve to |', () => {
         flm.horizontalSmushingRules.enableBigXSmushing();
-        expect(flm.getHorizontalSmushCharacter('/'.charCodeAt(0), '\\'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '/', '\\', '$')).toEqual('|');
     });
     test('When Enabled:  \\ and / resolve to Y', () => {
         flm.horizontalSmushingRules.enableBigXSmushing();
-        expect(flm.getHorizontalSmushCharacter('\\'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('Y'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '\\', '/', '$')).toEqual('Y');
     });
     test('When Enabled:  > and < resolve to X', () => {
         flm.horizontalSmushingRules.enableBigXSmushing();
-        expect(flm.getHorizontalSmushCharacter('>'.charCodeAt(0), '<'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('X'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '>', '<', '$')).toEqual('X');
     });
     test('When Enabled:  < and > refuse to smush', () => {
         flm.horizontalSmushingRules.enableBigXSmushing();
-        expect(flm.getHorizontalSmushCharacter('<'.charCodeAt(0), '>'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '<', '>', '$')).toEqual(null);
     });
     test('When Unset:  > and < refuse to smush', () => {
         flm.horizontalSmushingRules.unsetBigXSmushing();
-        expect(flm.getHorizontalSmushCharacter('>'.charCodeAt(0), '<'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '>', '<', '$')).toEqual(null);
     });
     test('When Disabled:  / and \\ refuse to smush', () => {
         flm.horizontalSmushingRules.disableBigXSmushing();
-        expect(flm.getHorizontalSmushCharacter('/'.charCodeAt(0), '\\'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '/', '\\', '$')).toEqual(null);
     });
     test('When Disabled:  \\ and / refuse to smush', () => {
         flm.horizontalSmushingRules.disableBigXSmushing();
-        expect(flm.getHorizontalSmushCharacter('\\'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '\\', '/', '$')).toEqual(null);
     });
     test('When Disabled:  > and < refuse to smush', () => {
         flm.horizontalSmushingRules.disableBigXSmushing();
-        expect(flm.getHorizontalSmushCharacter('>'.charCodeAt(0), '<'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '>', '<', '$')).toEqual(null);
     });
 });
 
@@ -259,15 +280,15 @@ describe('Test Horizontal Hardblank Smushing', () => {
 
     test('When Enabled:  Two hardblanks resolve to hardblank', () => {
         flm.horizontalSmushingRules.enableHardblankSmushing();
-        expect(flm.getHorizontalSmushCharacter('$'.charCodeAt(0), '$'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('$'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '$', '$', '$')).toEqual('$');
     });
     test('When Unset:  Two hardblanks refuse to smush', () => {
         flm.horizontalSmushingRules.unsetHardblankSmushing();
-        expect(flm.getHorizontalSmushCharacter('$'.charCodeAt(0), '$'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '$', '$', '$')).toEqual(null);
     });
     test('When Disabled:  Two hardblanks refuse to smush', () => {
         flm.horizontalSmushingRules.disableHardblankSmushing();
-        expect(flm.getHorizontalSmushCharacter('$'.charCodeAt(0), '$'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testHorizontalSmush(flm, '$', '$', '$')).toEqual(null);
     });
 });
 
@@ -277,16 +298,16 @@ describe('Test Horizontal Universal Smushing - LTR', () => {
     flm.printDirection.leftToRight();
 
     test('| and } resolves to }', () => {
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '}'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('}'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '|', '}', '$')).toEqual('}');
     });
     test('} and | resolve to |', () => {
-        expect(flm.getHorizontalSmushCharacter('}'.charCodeAt(0), '|'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '}', '|', '$')).toEqual('|');
     });
     test('Hardblank and } resolves to }', () => {
-        expect(flm.getHorizontalSmushCharacter('$'.charCodeAt(0), '}'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('}'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '$', '}', '$')).toEqual('}');
     });
     test('| and hardblank resolves to |', () => {
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '$'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '|', '$', '$')).toEqual('|');
     });
 });
 
@@ -296,16 +317,16 @@ describe('Test Horizontal Universal Smushing - RTL', () => {
     flm.printDirection.rightToLeft();
 
     test('| and } resolves to |', () => {
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '}'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '|', '}', '$')).toEqual('|');
     });
     test('} and | resolve to }', () => {
-        expect(flm.getHorizontalSmushCharacter('}'.charCodeAt(0), '|'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('}'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '}', '|', '$')).toEqual('}');
     });
     test('Hardblank and } resolves to }', () => {
-        expect(flm.getHorizontalSmushCharacter('$'.charCodeAt(0), '}'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('}'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '$', '}', '$')).toEqual('}');
     });
     test('| and hardblank resolves to |', () => {
-        expect(flm.getHorizontalSmushCharacter('|'.charCodeAt(0), '$'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testHorizontalSmush(flm, '|', '$', '$')).toEqual('|');
     });
 });
 
@@ -316,47 +337,47 @@ describe('Test Vertical Equal Character Smushing', () => {
 
     test('When Enabled:  Two hardblanks smush to whitespace', () => {
         flm.verticalSmushingRules.enableEqualCharacterSmushing();
-        expect(flm.getVerticalSmushCharacter('$'.charCodeAt(0), '$'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(' '.charCodeAt(0));
+        expect(testVerticalSmush(flm, '$', '$', '$')).toEqual(' ');
     });
 
     test('When Enabled:  Two different characters refuse to smush', () => {
         flm.verticalSmushingRules.enableEqualCharacterSmushing();
-        expect(flm.getVerticalSmushCharacter('|'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '|', '/', '$')).toEqual(null);
     });
 
     test('When Enabled:  | and | resolve to |', () => {
         flm.verticalSmushingRules.enableEqualCharacterSmushing();
-        expect(flm.getVerticalSmushCharacter('|'.charCodeAt(0), '|'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('|'.charCodeAt(0));
+        expect(testVerticalSmush(flm, '|', '|', '$')).toEqual('|');
     });
 
     test('When Enabled:  X and X resolve to X', () => {
         flm.verticalSmushingRules.enableEqualCharacterSmushing();
-        expect(flm.getVerticalSmushCharacter('X'.charCodeAt(0), 'X'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('X'.charCodeAt(0));
+        expect(testVerticalSmush(flm, 'X', 'X', '$')).toEqual('X');
     });
 
     test('When Enabled:  / and / resolve to /', () => {
         flm.verticalSmushingRules.enableEqualCharacterSmushing();
-        expect(flm.getVerticalSmushCharacter('/'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('/'.charCodeAt(0));
+        expect(testVerticalSmush(flm, '/', '/', '$')).toEqual('/');
     });
 
     test('When Unset:  / and / refuse to smush', () => {
         flm.verticalSmushingRules.unsetEqualCharacterSmushing();
-        expect(flm.getVerticalSmushCharacter('/'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '/', '/', '$')).toEqual(null);
     });
 
     test('When Disabled:  | and | refuse to smush', () => {
         flm.verticalSmushingRules.disableEqualCharacterSmushing();
-        expect(flm.getVerticalSmushCharacter('|'.charCodeAt(0), '|'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '|', '|', '$')).toEqual(null);
     });
 
     test('When Disabled:  X and X refuse to smush', () => {
         flm.verticalSmushingRules.disableEqualCharacterSmushing();
-        expect(flm.getVerticalSmushCharacter('X'.charCodeAt(0), 'X'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, 'X', 'X', '$')).toEqual(null);
     });
 
     test('When Disabled:  / and / refuse to smush', () => {
         flm.verticalSmushingRules.disableEqualCharacterSmushing();
-        expect(flm.getVerticalSmushCharacter('/'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '/', '/', '$')).toEqual(null);
     });
 });
 
@@ -370,26 +391,26 @@ describe('Test Vertical Underscore Smushing', () => {
     for (const c of underscoreReplacers) {
         test(`When Enabled:  _ and ${c} resolves to ${c}`, () => {
             flm.verticalSmushingRules.enableUnderscoreSmushing();
-            expect(flm.getVerticalSmushCharacter('_'.charCodeAt(0), c.charCodeAt(0), '$'.charCodeAt(0))).toEqual(c.charCodeAt(0));
+            expect(testVerticalSmush(flm, '_', c, '$')).toEqual(c);
         });
         test(`When Enabled:  ${c} and _ resolves to ${c}`, () => {
             flm.verticalSmushingRules.enableUnderscoreSmushing();
-            expect(flm.getVerticalSmushCharacter(c.charCodeAt(0), '_'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(c.charCodeAt(0));
+            expect(testVerticalSmush(flm, c, '_', '$')).toEqual(c);
         });
         test(`When Unset:  ${c} and _ refuse to smush`, () => {
             flm.verticalSmushingRules.unsetUnderscoreSmushing();
-            expect(flm.getVerticalSmushCharacter(c.charCodeAt(0), '_'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+            expect(testVerticalSmush(flm, c, '_', '$')).toEqual(null);
         });
     }
 
     for (const c of underscoreReplacers) {
         test(`When Disabled:  _ and ${c} refuse to smush`, () => {
             flm.verticalSmushingRules.disableUnderscoreSmushing();
-            expect(flm.getVerticalSmushCharacter('_'.charCodeAt(0), c.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+            expect(testVerticalSmush(flm, '_', c, '$')).toEqual(null);
         });
         test(`When Disabled:  ${c} and _ refuse to smush`, () => {
             flm.verticalSmushingRules.disableUnderscoreSmushing();
-            expect(flm.getVerticalSmushCharacter(c.charCodeAt(0), '_'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+            expect(testVerticalSmush(flm, c, '_', '$')).toEqual(null);
         });
     }
 });
@@ -401,63 +422,63 @@ describe('Test Vertical Hierarchy Smushing', () => {
 
     test('When Enabled:  | and / resolve to /', () => {
         flm.verticalSmushingRules.enableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter('|'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('/'.charCodeAt(0));
+        expect(testVerticalSmush(flm, '|', '/', '$')).toEqual('/');
     });
     test('When Enabled:  \\ and [ resolve to [', () => {
         flm.verticalSmushingRules.enableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter('\\'.charCodeAt(0), '['.charCodeAt(0), '$'.charCodeAt(0))).toEqual('['.charCodeAt(0));
+        expect(testVerticalSmush(flm, '\\', '[', '$')).toEqual('[');
     });
     test('When Enabled:  ] and { resolve to {', () => {
         flm.verticalSmushingRules.enableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter(']'.charCodeAt(0), '{'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('{'.charCodeAt(0));
+        expect(testVerticalSmush(flm, ']', '{', '$')).toEqual('{');
     });
     test('When Enabled:  } and ( resolve to (', () => {
         flm.verticalSmushingRules.enableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter('}'.charCodeAt(0), '('.charCodeAt(0), '$'.charCodeAt(0))).toEqual('('.charCodeAt(0));
+        expect(testVerticalSmush(flm, '}', '(', '$')).toEqual('(');
     });
     test('When Enabled:  ) and > resolve to >', () => {
         flm.verticalSmushingRules.enableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter(')'.charCodeAt(0), '>'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('>'.charCodeAt(0));
+        expect(testVerticalSmush(flm, ')', '>', '$')).toEqual('>');
     });
     test('When Enabled:  | and > resolve to >', () => {
         flm.verticalSmushingRules.enableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter('|'.charCodeAt(0), '>'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('>'.charCodeAt(0));
+        expect(testVerticalSmush(flm, '|', '>', '$')).toEqual('>');
     });
     test('When Enabled:  ) and / resolve to )', () => {
         flm.verticalSmushingRules.enableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter(')'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(')'.charCodeAt(0));
+        expect(testVerticalSmush(flm, ')', '/', '$')).toEqual(')');
     });
     test('When Unset:  ) and / refuse to smush', () => {
         flm.verticalSmushingRules.unsetHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter(')'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, ')', '/', '$')).toEqual(null);
     });
     test('When Disabled:  | and / refuse to smush', () => {
         flm.verticalSmushingRules.disableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter('|'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '|', '/', '$')).toEqual(null);
     });
     test('When Disabled:  \\ and [ refuse to smush', () => {
         flm.verticalSmushingRules.disableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter('\\'.charCodeAt(0), '['.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '\\', '[', '$')).toEqual(null);
     });
     test('When Disabled:  ] and { refuse to smush', () => {
         flm.verticalSmushingRules.disableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter(']'.charCodeAt(0), '{'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, ']', '{', '$')).toEqual(null);
     });
     test('When Disabled:  } and ( refuse to smush', () => {
         flm.verticalSmushingRules.disableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter('}'.charCodeAt(0), '('.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '}', '(', '$')).toEqual(null);
     });
     test('When Disabled:  ) and > refuse to smush', () => {
         flm.verticalSmushingRules.disableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter(')'.charCodeAt(0), '>'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, ')', '>', '$')).toEqual(null);
     });
     test('When Disabled:  | and > refuse to smush', () => {
         flm.verticalSmushingRules.disableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter('|'.charCodeAt(0), '>'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '|', '>', '$')).toEqual(null);
     });
     test('When Disabled:  ) and / refuse to smush', () => {
         flm.verticalSmushingRules.disableHierarchySmushing();
-        expect(flm.getVerticalSmushCharacter(')'.charCodeAt(0), '/'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, ')', '/', '$')).toEqual(null);
     });
 });
 
@@ -468,27 +489,27 @@ describe('Test Vertical Horizontal Line Smushing', () => {
 
     test('When Enabled:  - and _ resolve to =', () => {
         flm.verticalSmushingRules.enableHorizontalLineSmushing();
-        expect(flm.getVerticalSmushCharacter('-'.charCodeAt(0), '_'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('='.charCodeAt(0));
+        expect(testVerticalSmush(flm, '-', '_', '$')).toEqual('=');
     });
     test('When Enabled:  _ and - resolve to =', () => {
         flm.verticalSmushingRules.enableHorizontalLineSmushing();
-        expect(flm.getVerticalSmushCharacter('_'.charCodeAt(0), '-'.charCodeAt(0), '$'.charCodeAt(0))).toEqual('='.charCodeAt(0));
+        expect(testVerticalSmush(flm, '_', '-', '$')).toEqual('=');
     });
     test('When Enabled:  - and - refuse to smush', () => {
         flm.verticalSmushingRules.enableHorizontalLineSmushing();
-        expect(flm.getVerticalSmushCharacter('-'.charCodeAt(0), '-'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '-', '-', '$')).toEqual(null);
     });
     test('When Enabled:  _ and _ refuse to smush', () => {
         flm.verticalSmushingRules.enableHorizontalLineSmushing();
-        expect(flm.getVerticalSmushCharacter('_'.charCodeAt(0), '_'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '_', '_', '$')).toEqual(null);
     });
     test('When Disabled:  - and - refuse to smush', () => {
         flm.verticalSmushingRules.disableHorizontalLineSmushing();
-        expect(flm.getVerticalSmushCharacter('-'.charCodeAt(0), '-'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '-', '-', '$')).toEqual(null);
     });
     test('When Unset:  - and - refuse to smush', () => {
         flm.verticalSmushingRules.unsetHorizontalLineSmushing();
-        expect(flm.getVerticalSmushCharacter('-'.charCodeAt(0), '-'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '-', '-', '$')).toEqual(null);
     });
 });
 
@@ -499,15 +520,15 @@ describe('Test (the *INACTIVE* rule) Vertical Vertical Line SuperSmushing', () =
 
     test('When Enabled:  | and | refuse to smush', () => {
         flm.verticalSmushingRules.enableVerticalLineSuperSmushing();
-        expect(flm.getVerticalSmushCharacter('|'.charCodeAt(0), '|'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '|', '|', '$')).toEqual(null);
     });
     test('When Disabled:  | and | refuse to smush', () => {
         flm.verticalSmushingRules.disableVerticalLineSuperSmushing();
-        expect(flm.getVerticalSmushCharacter('|'.charCodeAt(0), '|'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '|', '|', '$')).toEqual(null);
     });
     test('When Unset:  | and | refuse to smush', () => {
         flm.verticalSmushingRules.unsetVerticalLineSuperSmushing();
-        expect(flm.getVerticalSmushCharacter('|'.charCodeAt(0), '|'.charCodeAt(0), '$'.charCodeAt(0))).toEqual(-1);
+        expect(testVerticalSmush(flm, '|', '|', '$')).toEqual(null);
     });
 });
 

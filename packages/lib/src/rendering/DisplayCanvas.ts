@@ -5,16 +5,21 @@ import { FIGCharacter } from '../FIGCharacter';
 import { FIGFont } from '../FIGFont';
 import { FontLayoutManager } from '../FontLayoutManager';
 import { ASCIICodes } from '../utils/ASCIICodes';
+import { Debuggable } from '../utils/DebugUtil';
 import { InputToken } from '../utils/InputToken';
 import { Matrix, MatrixUtils, MultilineMatrix } from '../utils/MatrixUtils';
 import { StringWidthProxy } from '../utils/StringWidthProxy';
+import { CanvasPixel } from './CanvasPixel';
 import { DisplaySubCanvas } from './DisplaySubCanvas';
+import {CanvasContext, Stylizer} from './Stylizer';
+import chalk from "chalk";
 
-export class DisplayCanvas {
+export class DisplayCanvas extends Debuggable {
     private readonly _lineHeight: number = 0;
     private readonly _lineLength: number = 0;
     private readonly _flm: FontLayoutManager;
     private readonly _font: FIGFont;
+    private readonly _words: InputToken[];
 
     private _lines: DisplaySubCanvas[] = [];
     private readonly _savedStates: Map<string, DisplaySubCanvas> = new Map<string, DisplaySubCanvas>();
@@ -24,16 +29,23 @@ export class DisplayCanvas {
     private readonly STATE_NAME_CHARACTER = 'internal-last-character-state';
     private readonly STATE_NAME_WORD = 'internal-last-word-state';
 
-    constructor(font: FIGFont, flm: FontLayoutManager) {
+    constructor(font: FIGFont, flm: FontLayoutManager, words: InputToken[]) {
+        super(Symbol('DisplayCanvas'));
         this._lineHeight = font.height;
         this._flm = flm;
         this._font = font;
+        this._words = words;
         this._lineLength = flm.options.getRenderingWidth();
         this.initialiseLine(this._currentLine);
+
+        // This is the starting point of adding characters to the canvas
+        for (const inputToken of this._words) {
+            this.addWord(inputToken);
+        }
     }
 
     private initialiseLine(lineNumber: number) {
-        this._lines[lineNumber] = new DisplaySubCanvas(this._lineHeight, this._lineLength);
+        this._lines[lineNumber] = new DisplaySubCanvas(this, lineNumber, this._lineHeight, this._lineLength);
     }
 
     private get currentLine(): DisplaySubCanvas {
@@ -87,7 +99,7 @@ export class DisplayCanvas {
     }
 
     private saveCurrentLineState(stateName: string): void {
-        this._savedStates.set(stateName, new DisplaySubCanvas(this._lineHeight, this._lineLength, this.currentLine));
+        this._savedStates.set(stateName, DisplaySubCanvas.copy(this.currentLine));
     }
 
     private restorePreviousCurrentLineState(stateName: string): void {
@@ -115,6 +127,11 @@ export class DisplayCanvas {
         return this.getLineLength(this._currentLine);
     }
 
+    public getLineHeight(lineNumber: number): number {
+        // console.log(this._lines[lineNumber]);
+        return this._lines[lineNumber].lineHeight;
+    }
+
     public getLineLength(lineNumber: number): number {
         // console.log(this._lines[lineNumber]);
         return this._lines[lineNumber].lineLength;
@@ -124,7 +141,7 @@ export class DisplayCanvas {
         return this._flm.options.getBodyTextCharacterReplacer().get(char) ?? this._flm.options.getPaddingCharacterReplacer().get(char) ?? String.fromCharCode(char);
     }
 
-    public padMatrix(buff: Matrix) {
+    public padMatrix(buff: Matrix<CanvasPixel>) {
         const alignment = this._flm.options.getRenderingAlignment();
         const targetWidth = this._flm.options.getRenderingWidth(); // * this._flm.options.characterReplacement.getBodyTextWidestGrapheme();
         const horizontalPaddingMode = this._flm.options.horizontalPaddingMode;
@@ -160,7 +177,7 @@ export class DisplayCanvas {
             switch (alignment) {
                 case FontLayoutHorizontalAlignment.LEFT_ALIGN:
                     if (horizontalPaddingMode === FontLayoutHorizontalPaddingMode.FULL_PADDING) {
-                        buff[i].push(...new Array(targetWidth - arrayWidth).fill(ASCIICodes.FIGLET_TS_RIGHT_PADDING_MARKER));
+                        buff[i].push(...new Array(targetWidth - arrayWidth).fill(new CanvasPixel(ASCIICodes.FIGLET_TS_RIGHT_PADDING_MARKER)));
                     }
                     break;
 
@@ -170,10 +187,10 @@ export class DisplayCanvas {
                         const rightPad = Math.ceil((targetWidth - arrayWidth) / 2);
                         if (horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_PADDING) {
                             if (horizontalPaddingMode === FontLayoutHorizontalPaddingMode.FULL_PADDING || horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_LEFT_PADDING) {
-                                buff[i].unshift(...new Array(leftPad).fill(ASCIICodes.FIGLET_TS_LEFT_PADDING_MARKER));
+                                buff[i].unshift(...new Array(leftPad).fill(new CanvasPixel(ASCIICodes.FIGLET_TS_LEFT_PADDING_MARKER)));
                             }
                             if (horizontalPaddingMode === FontLayoutHorizontalPaddingMode.FULL_PADDING || horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_RIGHT_PADDING) {
-                                buff[i].push(...new Array(rightPad).fill(ASCIICodes.FIGLET_TS_RIGHT_PADDING_MARKER));
+                                buff[i].push(...new Array(rightPad).fill(new CanvasPixel(ASCIICodes.FIGLET_TS_RIGHT_PADDING_MARKER)));
                             }
                         }
                     }
@@ -181,7 +198,7 @@ export class DisplayCanvas {
 
                 case FontLayoutHorizontalAlignment.RIGHT_ALIGN:
                     if (horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_PADDING && horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_LEFT_PADDING) {
-                        buff[i].unshift(...new Array(Math.floor(targetWidth - arrayWidth)).fill(ASCIICodes.FIGLET_TS_LEFT_PADDING_MARKER));
+                        buff[i].unshift(...new Array(Math.floor(targetWidth - arrayWidth)).fill(new CanvasPixel(ASCIICodes.FIGLET_TS_LEFT_PADDING_MARKER)));
                     }
                     break;
                 default:
@@ -193,14 +210,14 @@ export class DisplayCanvas {
     }
 
     public toString(): string {
-        const buff: MultilineMatrix = [];
+        const buff: MultilineMatrix<CanvasPixel> = [];
 
         // Iterate through each SubCanvas
         for (let i = 0; i < this._lines.length; i++) {
             buff[i] = [];
             // Iterate through each line of the SubCanvas
             for (let j = 0; j < this._lines[i].line.length; j++) {
-                const bufferLine = [];
+                const bufferLine: CanvasPixel[] = [];
                 if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
                     // Left to Right = paste the SubCanvas line from zero to the SubCanvas cursor point
                     for (const n of this._lines[i].line[j]) {
@@ -222,7 +239,7 @@ export class DisplayCanvas {
         }
 
         // Vertical Kerning or Smushing
-        const vSmushBuffer: Matrix = [];
+        const vSmushBuffer: Matrix<CanvasPixel> = [];
 
         if (this._flm.options.doVerticalKerning() || this._flm.options.doVerticalSmushing()) {
             // Shove in the entire first line
@@ -242,12 +259,14 @@ export class DisplayCanvas {
                     // Work out how far you can move something upwards into the existing buffer
                     let dist = 0;
                     for (let k = vSmushBuffer.length - 1; k >= vSmushBuffer.length - this._font.height + 1; k--) {
-                        let char = upperLine[k][j] ?? ASCIICodes.SPACE;
+                        let pixel = upperLine[k][j] ?? CanvasPixel.getWhitespacePixel();
+
                         // Treat hardblanks and L/R Padding Chars as spaces - i.e. smushable
-                        if (char === this._font.hardblankCharacter || this._flm.options.characterReplacement.getPaddingCharacterMap().has(char)) {
-                            char = ASCIICodes.SPACE;
+                        if (pixel.equals(this._font.hardblankCharacter) || this._flm.options.characterReplacement.getPaddingCharacterMap().has(pixel.character)) {
+                            pixel = CanvasPixel.getWhitespacePixel();
                         }
-                        if (char !== ASCIICodes.SPACE) {
+
+                        if (!pixel.equals(ASCIICodes.SPACE)) {
                             break;
                         } else {
                             dist++;
@@ -256,12 +275,12 @@ export class DisplayCanvas {
                     upperLineBottomDistances.push(dist);
                     dist = 0;
                     for (let k = 0; k < lineHeight; k++) {
-                        let char = lowerLine[k][j] ?? ASCIICodes.SPACE;
+                        let pixel = lowerLine[k][j] ?? CanvasPixel.getWhitespacePixel();
                         // Treat hardblanks and L/R Padding Chars as spaces - i.e. smushable
-                        if (char === this._font.hardblankCharacter || this._flm.options.characterReplacement.getPaddingCharacterMap().has(char)) {
-                            char = ASCIICodes.SPACE;
+                        if (pixel.equals(this._font.hardblankCharacter) || this._flm.options.characterReplacement.getPaddingCharacterMap().has(pixel.character)) {
+                            pixel = CanvasPixel.getWhitespacePixel();
                         }
-                        if (char !== ASCIICodes.SPACE) {
+                        if (!pixel.equals(ASCIICodes.SPACE)) {
                             break;
                         } else {
                             dist++;
@@ -286,19 +305,21 @@ export class DisplayCanvas {
                 maxDistance = Math.min(maxDistance, this._font.height - this._flm.verticalLayout.getVerticalKernMaxOffset());
 
                 let canSmush = false;
-                let overlapLines: Matrix = [];
+                let overlapLines: Matrix<CanvasPixel> = [];
                 while (maxDistance > 0 && !canSmush) {
                     overlapLines = [];
                     canSmush = true;
                     for (let j = 0; j < maxDistance && canSmush; j++) {
                         overlapLines[j] = [];
                         for (let k = 0; k < upperLineBottomDistances.length && canSmush; k++) {
-                            const upperChar = upperLine[upperLine.length - maxDistance + j][k] ?? ASCIICodes.SPACE;
-                            const lowerChar = lowerLine[j][k] ?? ASCIICodes.SPACE;
-                            overlapLines[j].push(this._flm.getVerticalSmushCharacter(upperChar, lowerChar, this._font.hardblankCharacter));
-                            if (overlapLines[j][k] === -1) {
+                            const upperChar = upperLine[upperLine.length - maxDistance + j][k] ?? CanvasPixel.getWhitespacePixel();
+                            const lowerChar = lowerLine[j][k] ?? CanvasPixel.getWhitespacePixel();
+                            const smushReult = this._flm.getVerticalSmushCharacter(upperChar, lowerChar, this._font.hardblankCharacter);
+                            if (smushReult === null) {
                                 canSmush = false;
                                 maxDistance--;
+                            } else {
+                                overlapLines[j].push(smushReult);
                             }
                         }
                     }
@@ -324,7 +345,55 @@ export class DisplayCanvas {
         return this.convertMatrixToDisplayString(vSmushBuffer);
     }
 
-    public convertMatrixToDisplayString(matrix: Matrix): string {
+    public convertMatrixToDisplayString(matrix: Matrix<CanvasPixel>): string {
+        // For the time being, it looks like we're going to have two output modes:
+        //  1.  "Emoji mode"    If the user has requested output character substitution with full-width characters
+        //  2.  "Context mode"  Otherwise
+        if (this._flm.characterReplacement.getBodyTextWidestGrapheme() > 1 || this._flm.characterReplacement.getPaddingCharacterWidth() > 1) {
+            // EMOJI MODE
+            return this.convertMatrixToStringInFullWidthMode(matrix);
+        } else {
+            // CONTEXT MODE
+            return this.convertMatrixToStringInContextMode(matrix);
+        }
+    }
+
+    private convertMatrixToStringInContextMode(matrix: Matrix<CanvasPixel>, stylizer: Stylizer | null = null): string {
+        const retVal: string[] = [];
+
+        const canvasHeight = matrix.length;
+        const canvasWidth = matrix.length;
+
+        for (const currentLineArray of matrix) {
+            const currentLine: string[] = [];
+
+            for (const pixel of currentLineArray) {
+                if (stylizer) {
+                    currentLine.push(
+                        stylizer.applyStyle(pixel)
+                    );
+                } else {
+                    if (pixel.context.canvasContext) {
+                        if (pixel.context.canvasContext.lineWordNumber === 0) {
+                            currentLine.push(chalk.red(this.getMappedCharacter(pixel.character)));
+                            
+                        } else {
+                            currentLine.push(chalk.green(this.getMappedCharacter(pixel.character)));
+                            
+                        }
+                    } else {
+                        currentLine.push(this.getMappedCharacter(pixel.character));
+                    }
+                }
+            }
+
+            retVal.push(currentLine.join(''));
+        }
+
+        return retVal.join('\n');
+    }
+
+    private convertMatrixToStringInFullWidthMode(matrix: Matrix<CanvasPixel>): string {
         const retVal: string[] = [];
 
         // Check the string width of each replacement character to try to prevent messiness on output
@@ -333,19 +402,19 @@ export class DisplayCanvas {
 
         for (const currentLineArray of matrix) {
             const currentLine: string[] = [];
+
             const rleCompressed: [number, number][] = [];
 
             let cursor = 0;
-
-            // Break the input string down to an RLE-compressed tubple of [outputChar,run length]
+            // Break the input string down to an RLE-compressed tuple of [outputChar,run length]
             while (cursor < currentLineArray.length) {
                 let subCursor = 0;
-                const char = currentLineArray[cursor + subCursor];
+                const pixel = currentLineArray[cursor + subCursor];
                 while (subCursor + cursor < currentLineArray.length && currentLineArray[cursor + subCursor] === currentLineArray[cursor + subCursor + 1]) {
                     subCursor++;
                 }
                 // rleCompressed.push([char, (subCursor + 1) * ((this._flm.options.characterReplacement.getPaddingCharacterMap().has(char)) ? 1 : bodyTextWidestGrapheme)]);
-                rleCompressed.push([char, subCursor + 1]);
+                rleCompressed.push([pixel.character, subCursor + 1]);
                 cursor += 1 + subCursor;
             }
 
@@ -358,6 +427,12 @@ export class DisplayCanvas {
                 // Now we construct the block we need to insert
                 const toInsert: string[] = [];
 
+                if (outputCharWidth === 0) {
+                    console.log(currentLineArray);
+                    console.log(outputChar);
+                    console.log(tuple);
+                    console.log(outputCharWidth);
+                }
                 // Push as many copies of the grapheme as we need
                 toInsert.push(...new Array(Math.floor(tuple[1] / outputCharWidth)).fill(outputChar));
 
@@ -417,21 +492,34 @@ export class DisplayCanvas {
         return retVal.join('\n');
     }
 
+    private getGlyphMatrixFromFIGCharacter(figCharacter: FIGCharacter): Matrix<CanvasPixel> {
+        const retVal: Matrix<CanvasPixel> = [];
+
+        for (let i = 0; i < figCharacter.getGlyph().length; i++) {
+            retVal[i] = [];
+            retVal[i].push(...figCharacter.getGlyph()[i].map((x) => new CanvasPixel(x, { figCharacter: figCharacter })));
+        }
+
+        return retVal;
+    }
+
     public addFCToCurrentLine(figCharacter: FIGCharacter) {
         // This method does not care about line length, etc.  It will always suceed in adding a FIGCharacter to the end of a line:
 
         // If the line is empty, or if we're not kerning or smushing, just add the character
         // console.debug(`Adding FC for ${figCharacter.character}`);
         if (!(this._flm.options.doHorizontalKerning() || this._flm.options.doHorizontalSmushing())) {
-            MatrixUtils.appendMatrixToRight(this.currentLine.line, figCharacter.getGlyph());
-            // Therefore we add the FIGCharacter to the log of added chars
+            this.currentLine.appendMatrixToRight(this.getGlyphMatrixFromFIGCharacter(figCharacter));
+
+            // And add the FIGCharacter to the log of added chars
             this.currentLine.addFIGCharacter(figCharacter);
+
             return;
         }
 
         const existingBuffer = this.currentLine.line;
         // Get a copy of the glyph
-        const glyphToAdd = figCharacter.getGlyph().slice();
+        const glyphToAdd = this.getGlyphMatrixFromFIGCharacter(figCharacter);
         const existingBufferKernDistances: number[] = [];
         const glyphKernDistances: number[] =
             this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? figCharacter.paddingInfo.leftToRightDistances : figCharacter.paddingInfo.rightToLeftDistances;
@@ -451,8 +539,8 @@ export class DisplayCanvas {
             // Hunt for non-white space characters.  That will give us our kerning distance
             for (let k = 0; k < maxKernTestingDistance; k++) {
                 const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? existingBuffer[j].length - 1 - k : k;
-                const char = existingBuffer[j][existingBufferIndex] ?? ASCIICodes.SPACE;
-                if (char !== ASCIICodes.SPACE) {
+                const pixel = existingBuffer[j][existingBufferIndex] ?? CanvasPixel.getWhitespacePixel();
+                if (!pixel.equals(ASCIICodes.SPACE)) {
                     break;
                 } else {
                     dist++;
@@ -484,7 +572,7 @@ export class DisplayCanvas {
         // console.debug(`Final Max Dist: ${kernDistance}`);
 
         let canSmush = false;
-        let overlapBuffer: Matrix = [];
+        let overlapBuffer: Matrix<CanvasPixel> = [];
         while (kernDistance > 0 && !canSmush) {
             overlapBuffer = [];
             canSmush = true;
@@ -495,20 +583,27 @@ export class DisplayCanvas {
                     const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? existingBuffer[i].length - kernDistance + j : j;
                     const newGlyphBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? j : glyphToAdd[i].length - kernDistance + j;
 
-                    const existingChar = existingBuffer[i][existingBufferIndex] ?? -1;
+                    // TODO:  Work out if we should use something other than -1... it has meaning...
+                    const existingChar = existingBuffer[i][existingBufferIndex] ?? new CanvasPixel(-1);
                     // console.debug(existingBuffer[i].length - kernDistance + j)
                     // console.debug(existingBuffer[i][existingBuffer[i].length - kernDistance + j])
-                    const newGlyphChar = glyphToAdd[i][newGlyphBufferIndex] ?? ASCIICodes.SPACE;
+
+                    const newGlyphChar = glyphToAdd[i][newGlyphBufferIndex] ?? CanvasPixel.getWhitespacePixel();
                     const smushResult = this._flm.getHorizontalSmushCharacter(existingChar, newGlyphChar, this._font.hardblankCharacter);
+                    
                     // console.debug(`LEFT: ${String.fromCharCode(existingChar)}(from idx: ${existingBufferIndex})    RIGHT: ${String.fromCharCode(newGlyphChar)}(from idx: ${newGlyphBufferIndex})  RESULT: ${String.fromCharCode(smushResult)}`)
-                    if (existingBuffer[i].length - kernDistance + j >= 0) {
-                        if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
-                            overlapBuffer[i].push(smushResult);
-                        } else {
-                            overlapBuffer[i].unshift(smushResult);
+
+                    // If we can smush
+                    if (smushResult !== null) {
+                        if (existingBuffer[i].length - kernDistance + j >= 0) {
+                            if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
+                                overlapBuffer[i].push(smushResult);
+                            } else {
+                                overlapBuffer[i].unshift(smushResult);
+                            }
                         }
-                    }
-                    if (smushResult === -1) {
+                    } else {
+                        // Otherwise this can't be smushed... reduce the amount of kern and try again
                         canSmush = false;
                         kernDistance--;
                     }
@@ -565,7 +660,7 @@ export class DisplayCanvas {
         this.currentLine.addFIGCharacter(figCharacter);
     }
 
-    public addWord(inputToken: InputToken, font: FIGFont) {
+    public addWord(inputToken: InputToken) {
         const word = inputToken.toString();
 
         if (inputToken.isNewline) {
@@ -573,7 +668,7 @@ export class DisplayCanvas {
         } else {
             for (let i = 0; i < word.length; i++) {
                 const character = word[i];
-                if (!this.addFIGCharacter(font.getFIGCharacter(character))) {
+                if (!this.addFIGCharacter(this._font.getFIGCharacter(character))) {
                     // If we've added more than one inputToken, then roll back to previous state and add a new line and start adding the inputToken again
                     this.restorePreviousCurrentLineState(this.STATE_NAME_WORD);
                     this.addLine();
@@ -590,5 +685,25 @@ export class DisplayCanvas {
         if (!inputToken.isWhitespace) {
             this.saveCurrentLineState(this.STATE_NAME_WORD);
         }
+    }
+
+    public getTargetWidth() {
+        return this._lineLength;
+    }
+
+    public getHeight() {
+        return this._lines.length * this._lineHeight;
+    }
+
+    public getLineCount() {
+        return this._lines.length;
+    }
+
+    public getWordCount() {
+        return this._words.filter((w) => !w.isNewline && !w.isWhitespace).length;
+    }
+
+    public getLine(lineNumber: number) {
+        return this._lines[lineNumber];
     }
 }

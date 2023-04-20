@@ -10,6 +10,7 @@ import { FontLayoutManagerOptionsExtensionPrintDirection } from './FontLayoutMan
 import { FontLayoutManagerOptionsExtensionVerticalLayout } from './FontLayoutManagerOptionsExtensionVerticalLayout';
 import { FontLayoutManagerOptionsExtensionVerticalSmushingRules } from './FontLayoutManagerOptionsExtensionVerticalSmushingRules';
 import { FontLayoutManagerOptionsExtensionWidth } from './FontLayoutManagerOptionsExtensionWidth';
+import { CanvasPixel } from './rendering/CanvasPixel';
 import { DisplayCanvas } from './rendering/DisplayCanvas';
 import { ASCIICodes } from './utils/ASCIICodes';
 import { InputTokenParser } from './utils/InputTokenParser';
@@ -71,27 +72,27 @@ export class FontLayoutManager {
 
     private readonly VERTICAL_HORIZONTAL_LINE_CHARACTERS: number[] = ['-'.charCodeAt(0), '_'.charCodeAt(0)];
 
-    public getHorizontalSmushCharacter(lChar: number, rChar: number, hardblankCharacter: number): number {
-        if (lChar === -1) {
-            if (rChar === ASCIICodes.SPACE) {
-                return ASCIICodes.SPACE;
+    public getHorizontalSmushCharacter(lChar: CanvasPixel, rChar: CanvasPixel, hardblankCharacter: number): CanvasPixel|null {
+        if (lChar.equals(-1)) {
+            if (rChar.equals(ASCIICodes.SPACE)) {
+                return CanvasPixel.getWhitespacePixel();
             }
-            return -1;
+            return null;
         }
 
-        if (lChar === 0 || lChar === ASCIICodes.SPACE) {
+        if (lChar.equals(0) || lChar.equals(ASCIICodes.SPACE)) {
             return rChar;
         }
-        if (rChar === ASCIICodes.SPACE) {
+        if (rChar.equals(ASCIICodes.SPACE)) {
             return lChar;
         }
 
         // UNIVERSAL SMUSHING
         if (this._options.doHorizontalUniversalSmushing()) {
-            if (lChar === hardblankCharacter) {
+            if (lChar.equals(hardblankCharacter)) {
                 return rChar;
             }
-            if (rChar === hardblankCharacter) {
+            if (rChar.equals(hardblankCharacter)) {
                 return lChar;
             }
 
@@ -104,37 +105,37 @@ export class FontLayoutManager {
 
         // HARDBLANK SMUSHING
         if (this._options.doHorizontalHardblankSmushing()) {
-            if (lChar === hardblankCharacter && rChar === hardblankCharacter) {
-                return hardblankCharacter;
+            if (lChar.equals(hardblankCharacter) && rChar.equals(hardblankCharacter)) {
+                return new CanvasPixel(hardblankCharacter);
             }
         }
 
         // Do not smush hardblanks
-        if (lChar === hardblankCharacter || rChar === hardblankCharacter) {
-            return -1;
+        if (lChar.equals(hardblankCharacter) || rChar.equals(hardblankCharacter)) {
+            return null;
         }
 
         // EQUAL CHARACTER SMUSHING
         if (this._options.doHorizontalEqualCharacterSmushing()) {
-            if (lChar === rChar && lChar !== hardblankCharacter) {
+            if (lChar.equals(rChar) && !lChar.equals(hardblankCharacter)) {
                 return lChar;
             }
         }
 
         // UNDERSCORE SMUSHING
         if (this._options.doHorizontalUnderscoreSmushing()) {
-            if (lChar === ASCIICodes.UNDERSCORE && this.UNDERSCORE_SMUSHING_REPLACERS.has(rChar)) {
+            if (lChar.equals(ASCIICodes.UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(rChar.character)) {
                 return rChar;
             }
-            if (rChar === ASCIICodes.UNDERSCORE && this.UNDERSCORE_SMUSHING_REPLACERS.has(lChar)) {
+            if (rChar.equals(ASCIICodes.UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(lChar.character)) {
                 return lChar;
             }
         }
 
         // HIERARCHY SMUSHING
         if (this._options.doHorizontalHierarchySmushing()) {
-            const lCharHierarchyScore: number = this.HIERARCHY_SMUSHING_CLASSES.findIndex((a) => a.indexOf(lChar) > -1);
-            const rCharHierarchyScore: number = this.HIERARCHY_SMUSHING_CLASSES.findIndex((a) => a.indexOf(rChar) > -1);
+            const lCharHierarchyScore: number = this.HIERARCHY_SMUSHING_CLASSES.findIndex((a) => a.indexOf(lChar.character) > -1);
+            const rCharHierarchyScore: number = this.HIERARCHY_SMUSHING_CLASSES.findIndex((a) => a.indexOf(rChar.character) > -1);
             if (lCharHierarchyScore !== -1 && rCharHierarchyScore !== -1) {
                 if (lCharHierarchyScore > rCharHierarchyScore) {
                     return lChar;
@@ -147,99 +148,99 @@ export class FontLayoutManager {
 
         // OPPOSITE PAIR SMUSHING
         if (this._options.doHorizontalOppositePairSmushing()) {
-            if (rChar !== lChar && this.OPPOSITE_PAIR_SMUSHING_PAIRS.filter((s) => s.has(lChar) && s.has(rChar)).length > 0) {
-                return ASCIICodes.PIPE;
+            if (!rChar.equals(lChar) && this.OPPOSITE_PAIR_SMUSHING_PAIRS.filter((s) => s.has(lChar.character) && s.has(rChar.character)).length > 0) {
+                return new CanvasPixel(ASCIICodes.PIPE);
             }
         }
 
         // BIG X SMUSHING
         if (this._options.doHorizontalBigXSmushing()) {
-            const bigXResult = this.BIG_X_SMUSHING_PAIRS.find((p) => p[0] === lChar && p[1] === rChar);
+            const bigXResult = this.BIG_X_SMUSHING_PAIRS.find((p) => p[0] === lChar.character && p[1] === rChar.character);
             if (bigXResult !== undefined) {
-                return bigXResult[2];
+                return new CanvasPixel(bigXResult[2]);
             }
         }
 
-        return -1;
+        return null;
     }
 
-    public getVerticalSmushCharacter(topChar: number, bottomChar: number, hardblankCharacter: number): number {
+    public getVerticalSmushCharacter(topPixel: CanvasPixel, bottomPixel: CanvasPixel, hardblankCharacter: number): CanvasPixel | null {
         // Handle any padding marker which may have been inserted pre-vertical smushing
-        if (this.options.getPaddingCharacterReplacer().has(topChar) || this.options.getPaddingCharacterReplacer().has(bottomChar)) {
-            if (topChar === bottomChar) {
-                return topChar;
+        if (this.options.getPaddingCharacterReplacer().has(topPixel.character) || this.options.getPaddingCharacterReplacer().has(bottomPixel.character)) {
+            if (topPixel.equals(bottomPixel)) {
+                return topPixel;
             }
 
-            if (this.options.getPaddingCharacterReplacer().has(topChar)) {
-                return bottomChar;
+            if (this.options.getPaddingCharacterReplacer().has(topPixel.character)) {
+                return bottomPixel;
             }
 
-            return topChar;
+            return topPixel;
         }
 
         // Vertical Smushing treats hardblanks as blanks...
-        if (topChar === hardblankCharacter) {
-            topChar = ASCIICodes.SPACE;
+        if (topPixel.equals(hardblankCharacter)) {
+            topPixel = CanvasPixel.getWhitespacePixel();
         }
-        if (bottomChar === hardblankCharacter) {
-            bottomChar = ASCIICodes.SPACE;
-        }
-
-        if (topChar === 0 || topChar === ASCIICodes.SPACE) {
-            return bottomChar;
+        if (bottomPixel.equals(hardblankCharacter)) {
+            bottomPixel = CanvasPixel.getWhitespacePixel();
         }
 
-        if (bottomChar === ASCIICodes.SPACE) {
-            return topChar;
+        if (topPixel.equals(0) || topPixel.equals(ASCIICodes.SPACE)) {
+            return bottomPixel;
+        }
+
+        if (bottomPixel.equals(ASCIICodes.SPACE)) {
+            return topPixel;
         }
 
         // UNIVERSAL SMUSHING
         if (this._options.doVerticalUniversalSmushing()) {
-            if (topChar === hardblankCharacter) {
-                return bottomChar;
+            if (topPixel.equals(hardblankCharacter)) {
+                return bottomPixel;
             }
-            if (bottomChar === hardblankCharacter) {
-                return topChar;
+            if (bottomPixel.equals(hardblankCharacter)) {
+                return topPixel;
             }
 
-            return bottomChar;
+            return bottomPixel;
         }
 
         // EQUAL CHARACTER SMUSHING
         if (this._options.doVerticalEqualCharacterSmushing()) {
-            if (topChar === bottomChar) {
-                return topChar;
+            if (topPixel.equals(bottomPixel)) {
+                return topPixel;
             }
         }
 
         // UNDERSCORE SMUSHING
         if (this._options.doVerticalUnderscoreSmushing()) {
-            if (topChar === ASCIICodes.UNDERSCORE && this.UNDERSCORE_SMUSHING_REPLACERS.has(bottomChar)) {
-                return bottomChar;
+            if (topPixel.equals(ASCIICodes.UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(bottomPixel.character)) {
+                return bottomPixel;
             }
-            if (bottomChar === ASCIICodes.UNDERSCORE && this.UNDERSCORE_SMUSHING_REPLACERS.has(topChar)) {
-                return topChar;
+            if (bottomPixel.equals(ASCIICodes.UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(topPixel.character)) {
+                return topPixel;
             }
         }
 
         // HIERARCHY SMUSHING
         if (this._options.doVerticalHierarchySmushing()) {
-            const lCharHierarchyScore: number = this.HIERARCHY_SMUSHING_CLASSES.findIndex((a) => a.indexOf(topChar) > -1);
-            const rCharHierarchyScore: number = this.HIERARCHY_SMUSHING_CLASSES.findIndex((a) => a.indexOf(bottomChar) > -1);
+            const lCharHierarchyScore: number = this.HIERARCHY_SMUSHING_CLASSES.findIndex((a) => a.indexOf(topPixel.character) > -1);
+            const rCharHierarchyScore: number = this.HIERARCHY_SMUSHING_CLASSES.findIndex((a) => a.indexOf(bottomPixel.character) > -1);
             if (lCharHierarchyScore !== -1 && rCharHierarchyScore !== -1) {
                 if (lCharHierarchyScore > rCharHierarchyScore) {
-                    return topChar;
+                    return topPixel;
                 }
                 if (rCharHierarchyScore > lCharHierarchyScore) {
-                    return bottomChar;
+                    return bottomPixel;
                 }
             }
         }
 
         // HORIZONTAL LINE SMUSHING
         if (this._options.doVerticalHorizontalLineSmushing()) {
-            if (topChar !== bottomChar && this.VERTICAL_HORIZONTAL_LINE_CHARACTERS.indexOf(topChar) > -1 && this.VERTICAL_HORIZONTAL_LINE_CHARACTERS.indexOf(bottomChar) > -1) {
-                return '='.charCodeAt(0);
+            if (!topPixel.equals(bottomPixel) && this.VERTICAL_HORIZONTAL_LINE_CHARACTERS.indexOf(topPixel.character) > -1 && this.VERTICAL_HORIZONTAL_LINE_CHARACTERS.indexOf(bottomPixel.character) > -1) {
+                return new CanvasPixel('='.charCodeAt(0));
             }
         }
 
@@ -250,15 +251,11 @@ export class FontLayoutManager {
             // Keeping this code block here for completeness to the spec.
         }
 
-        return -1;
+        return null;
     }
 
     private createCanvas(text: string, font: FIGFont): DisplayCanvas {
-        const canvas: DisplayCanvas = new DisplayCanvas(font, this);
-
-        for (const inputToken of InputTokenParser.parse(text)) {
-            canvas.addWord(inputToken, font);
-        }
+        const canvas: DisplayCanvas = new DisplayCanvas(font, this, InputTokenParser.parse(text));
         return canvas;
     }
 
