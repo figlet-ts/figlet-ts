@@ -212,3 +212,76 @@ describe('Right-aligned full padding tests', () => {
     figDriverOptions.padding.fullPadding();
     executeTests('padding/right-align-full-padding', figDriverOptions);
 });
+
+
+describe('Test Horizontal Layout Mode: Full Width - Left-aligned', () => {
+    const figDriverOptions: FontLayoutManagerOptions = new FontLayoutManagerOptions();
+    figDriverOptions.align.left();
+    figDriverOptions.width.set(80);
+    figDriverOptions.horizontalLayout.full();
+    executeTests('horizontal-layout/full/left', figDriverOptions);
+});
+
+describe('Test Horizontal Layout Mode: Full Width - Right-aligned', () => {
+    const figDriverOptions: FontLayoutManagerOptions = new FontLayoutManagerOptions();
+    figDriverOptions.align.right();
+    figDriverOptions.width.set(80);
+    figDriverOptions.horizontalLayout.full();
+    executeTests('horizontal-layout/full/right', figDriverOptions);
+});
+
+describe('Test Horizontal Layout Mode: Full Width - Centre-aligned', () => {
+    const figDriverOptions: FontLayoutManagerOptions = new FontLayoutManagerOptions();
+    figDriverOptions.align.centre();
+    figDriverOptions.width.set(80);
+    figDriverOptions.horizontalLayout.full();
+    executeTests('horizontal-layout/full/centre', figDriverOptions);
+});
+
+describe('Test Horizontal Layout Mode: Kern - Left-aligned', () => {
+    const figDriverOptions: FontLayoutManagerOptions = new FontLayoutManagerOptions();
+    figDriverOptions.align.left();
+    figDriverOptions.width.set(80);
+    figDriverOptions.horizontalLayout.kern();
+    executeTests('horizontal-layout/kern/left', figDriverOptions);
+});
+
+describe('Test Horizontal Layout Mode: Kern - Right-aligned', () => {
+    const figDriverOptions: FontLayoutManagerOptions = new FontLayoutManagerOptions();
+    figDriverOptions.align.right();
+    figDriverOptions.width.set(80);
+    figDriverOptions.horizontalLayout.kern();
+    executeTests('horizontal-layout/kern/right', figDriverOptions);
+});
+
+describe('Test Horizontal Layout Mode: Kern - Centre-aligned', () => {
+    const figDriverOptions: FontLayoutManagerOptions = new FontLayoutManagerOptions();
+    figDriverOptions.align.centre();
+    figDriverOptions.width.set(80);
+    figDriverOptions.horizontalLayout.kern();
+    executeTests('horizontal-layout/kern/centre', figDriverOptions);
+});
+
+describe('Test Horizontal Layout Mode: Smush - Left-aligned', () => {
+    const figDriverOptions: FontLayoutManagerOptions = new FontLayoutManagerOptions();
+    figDriverOptions.align.left();
+    figDriverOptions.width.set(80);
+    figDriverOptions.horizontalLayout.smush();
+    executeTests('horizontal-layout/smush/left', figDriverOptions);
+});
+
+describe('Test Horizontal Layout Mode: Smush - Right-aligned', () => {
+    const figDriverOptions: FontLayoutManagerOptions = new FontLayoutManagerOptions();
+    figDriverOptions.align.right();
+    figDriverOptions.width.set(80);
+    figDriverOptions.horizontalLayout.smush();
+    executeTests('horizontal-layout/smush/right', figDriverOptions);
+});
+
+describe('Test Horizontal Layout Mode: Smush - Centre-aligned', () => {
+    const figDriverOptions: FontLayoutManagerOptions = new FontLayoutManagerOptions();
+    figDriverOptions.align.centre();
+    figDriverOptions.width.set(80);
+    figDriverOptions.horizontalLayout.smush();
+    executeTests('horizontal-layout/smush/centre', figDriverOptions);
+});

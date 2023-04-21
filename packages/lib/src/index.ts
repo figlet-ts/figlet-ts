@@ -1,7 +1,6 @@
-import { FIGFont } from './FIGFont';
-import { FLFParser } from './FLFParser';
-import { FontLayoutManager } from './FontLayoutManager';
-import { FontLayoutManagerOptions } from './FontLayoutManagerOptions';
-import { FontDiagnosticUtils } from './utils/FontDiagnosticUtils';
-
-export { FontDiagnosticUtils, FIGFont, FLFParser, FontLayoutManager, FontLayoutManagerOptions };
+export { FIGFont } from './FIGFont';
+export { FLFParser } from './FLFParser';
+export { FontLayoutManager } from './FontLayoutManager';
+export { FontLayoutManagerOptions } from './FontLayoutManagerOptions';
+export { Stylizer } from './rendering/Stylizer';
+export { FontDiagnosticUtils } from './utils/FontDiagnosticUtils';

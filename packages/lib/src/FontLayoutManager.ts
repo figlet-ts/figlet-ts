@@ -72,7 +72,7 @@ export class FontLayoutManager {
 
     private readonly VERTICAL_HORIZONTAL_LINE_CHARACTERS: number[] = ['-'.charCodeAt(0), '_'.charCodeAt(0)];
 
-    public getHorizontalSmushCharacter(lChar: CanvasPixel, rChar: CanvasPixel, hardblankCharacter: number): CanvasPixel|null {
+    public getHorizontalSmushCharacter(lChar: CanvasPixel, rChar: CanvasPixel, hardblankCharacter: number): CanvasPixel | null {
         if (lChar.equals(-1)) {
             if (rChar.equals(ASCIICodes.SPACE)) {
                 return CanvasPixel.getWhitespacePixel();
@@ -239,7 +239,11 @@ export class FontLayoutManager {
 
         // HORIZONTAL LINE SMUSHING
         if (this._options.doVerticalHorizontalLineSmushing()) {
-            if (!topPixel.equals(bottomPixel) && this.VERTICAL_HORIZONTAL_LINE_CHARACTERS.indexOf(topPixel.character) > -1 && this.VERTICAL_HORIZONTAL_LINE_CHARACTERS.indexOf(bottomPixel.character) > -1) {
+            if (
+                !topPixel.equals(bottomPixel) &&
+                this.VERTICAL_HORIZONTAL_LINE_CHARACTERS.indexOf(topPixel.character) > -1 &&
+                this.VERTICAL_HORIZONTAL_LINE_CHARACTERS.indexOf(bottomPixel.character) > -1
+            ) {
                 return new CanvasPixel('='.charCodeAt(0));
             }
         }

@@ -11,8 +11,7 @@ import { Matrix, MatrixUtils, MultilineMatrix } from '../utils/MatrixUtils';
 import { StringWidthProxy } from '../utils/StringWidthProxy';
 import { CanvasPixel } from './CanvasPixel';
 import { DisplaySubCanvas } from './DisplaySubCanvas';
-import {CanvasContext, Stylizer} from './Stylizer';
-import chalk from "chalk";
+import { Stylizer } from './Stylizer';
 
 export class DisplayCanvas extends Debuggable {
     private readonly _lineHeight: number = 0;
@@ -29,8 +28,8 @@ export class DisplayCanvas extends Debuggable {
     private readonly STATE_NAME_CHARACTER = 'internal-last-character-state';
     private readonly STATE_NAME_WORD = 'internal-last-word-state';
 
-    constructor(font: FIGFont, flm: FontLayoutManager, words: InputToken[]) {
-        super(Symbol('DisplayCanvas'));
+    constructor(font: FIGFont, flm: FontLayoutManager, words: InputToken[] = []) {
+        super('DisplayCanvas');
         this._lineHeight = font.height;
         this._flm = flm;
         this._font = font;
@@ -361,29 +360,14 @@ export class DisplayCanvas extends Debuggable {
     private convertMatrixToStringInContextMode(matrix: Matrix<CanvasPixel>, stylizer: Stylizer | null = null): string {
         const retVal: string[] = [];
 
-        const canvasHeight = matrix.length;
-        const canvasWidth = matrix.length;
-
         for (const currentLineArray of matrix) {
             const currentLine: string[] = [];
 
             for (const pixel of currentLineArray) {
                 if (stylizer) {
-                    currentLine.push(
-                        stylizer.applyStyle(pixel)
-                    );
+                    currentLine.push(stylizer.applyStyle(pixel));
                 } else {
-                    if (pixel.context.canvasContext) {
-                        if (pixel.context.canvasContext.lineWordNumber === 0) {
-                            currentLine.push(chalk.red(this.getMappedCharacter(pixel.character)));
-                            
-                        } else {
-                            currentLine.push(chalk.green(this.getMappedCharacter(pixel.character)));
-                            
-                        }
-                    } else {
-                        currentLine.push(this.getMappedCharacter(pixel.character));
-                    }
+                    currentLine.push(this.getMappedCharacter(pixel.character));
                 }
             }
 
@@ -509,7 +493,12 @@ export class DisplayCanvas extends Debuggable {
         // If the line is empty, or if we're not kerning or smushing, just add the character
         // console.debug(`Adding FC for ${figCharacter.character}`);
         if (!(this._flm.options.doHorizontalKerning() || this._flm.options.doHorizontalSmushing())) {
-            this.currentLine.appendMatrixToRight(this.getGlyphMatrixFromFIGCharacter(figCharacter));
+            this._debug(`Horizontal kern/smush disabled - appending "${figCharacter.character}" on to the current line at full width`);
+            if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
+                this.currentLine.appendMatrixToRight(this.getGlyphMatrixFromFIGCharacter(figCharacter));
+            } else {
+                this.currentLine.appendMatrixToLeft(this.getGlyphMatrixFromFIGCharacter(figCharacter));
+            }
 
             // And add the FIGCharacter to the log of added chars
             this.currentLine.addFIGCharacter(figCharacter);
@@ -517,7 +506,6 @@ export class DisplayCanvas extends Debuggable {
             return;
         }
 
-        const existingBuffer = this.currentLine.line;
         // Get a copy of the glyph
         const glyphToAdd = this.getGlyphMatrixFromFIGCharacter(figCharacter);
         const existingBufferKernDistances: number[] = [];
@@ -538,8 +526,8 @@ export class DisplayCanvas extends Debuggable {
 
             // Hunt for non-white space characters.  That will give us our kerning distance
             for (let k = 0; k < maxKernTestingDistance; k++) {
-                const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? existingBuffer[j].length - 1 - k : k;
-                const pixel = existingBuffer[j][existingBufferIndex] ?? CanvasPixel.getWhitespacePixel();
+                const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? this.currentLine.lineLength - 1 - k : k;
+                const pixel = this.currentLine.getPixelAt(existingBufferIndex, j) ?? CanvasPixel.getWhitespacePixel();
                 if (!pixel.equals(ASCIICodes.SPACE)) {
                     break;
                 } else {
@@ -580,22 +568,22 @@ export class DisplayCanvas extends Debuggable {
             for (let i = 0; i < this._lineHeight; i++) {
                 overlapBuffer[i] = [];
                 for (let j = 0; j < kernDistance && canSmush; j++) {
-                    const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? existingBuffer[i].length - kernDistance + j : j;
+                    const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? this.currentLine.lineLength - kernDistance + j : j;
                     const newGlyphBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? j : glyphToAdd[i].length - kernDistance + j;
 
                     // TODO:  Work out if we should use something other than -1... it has meaning...
-                    const existingChar = existingBuffer[i][existingBufferIndex] ?? new CanvasPixel(-1);
+                    const existingChar = this.currentLine.getPixelAt(existingBufferIndex, i) ?? new CanvasPixel(-1);
                     // console.debug(existingBuffer[i].length - kernDistance + j)
                     // console.debug(existingBuffer[i][existingBuffer[i].length - kernDistance + j])
 
                     const newGlyphChar = glyphToAdd[i][newGlyphBufferIndex] ?? CanvasPixel.getWhitespacePixel();
                     const smushResult = this._flm.getHorizontalSmushCharacter(existingChar, newGlyphChar, this._font.hardblankCharacter);
-                    
+
                     // console.debug(`LEFT: ${String.fromCharCode(existingChar)}(from idx: ${existingBufferIndex})    RIGHT: ${String.fromCharCode(newGlyphChar)}(from idx: ${newGlyphBufferIndex})  RESULT: ${String.fromCharCode(smushResult)}`)
 
                     // If we can smush
                     if (smushResult !== null) {
-                        if (existingBuffer[i].length - kernDistance + j >= 0) {
+                        if (this.currentLine.lineLength - kernDistance + j >= 0) {
                             if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
                                 overlapBuffer[i].push(smushResult);
                             } else {
@@ -612,47 +600,33 @@ export class DisplayCanvas extends Debuggable {
         }
 
         if (canSmush) {
-            const overlapBufferWidth = overlapBuffer[0].length;
-            const existingBufferWidth = existingBuffer[0].length;
-            const amountOfOverlapFromExistingBuffer = Math.min(existingBufferWidth, overlapBufferWidth);
+            this._debug(`Can kern/smush "${figCharacter.character}" on to the current line with an overlap of ${overlapBuffer[0].length} columns`);
 
             if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
-                // Trim the existing buffer
-                for (let i = 0; i < existingBuffer.length; i++) {
-                    existingBuffer[i].splice(existingBuffer[i].length - amountOfOverlapFromExistingBuffer, amountOfOverlapFromExistingBuffer);
-                }
-
-                // Add the overlap buffer
-                for (let i = 0; i < overlapBuffer.length; i++) {
-                    existingBuffer[i].push(...overlapBuffer[i].slice(0));
-                }
+                
+                // Overwrite the end of the current line with the overlap buffer
+                this.currentLine.replaceRight(overlapBuffer);
 
                 // Add the rest of the glyph characters
-                for (let i = 0; i < glyphToAdd.length; i++) {
-                    existingBuffer[i].push(...glyphToAdd[i].slice(kernDistance));
-                }
+                this.currentLine.appendMatrixToRight(glyphToAdd, kernDistance);
+
             } else if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.RIGHT_TO_LEFT) {
-                // Trim the existing buffer
-                for (let i = 0; i < existingBuffer.length; i++) {
-                    for (let j = 0; j < amountOfOverlapFromExistingBuffer; j++) {
-                        existingBuffer[i].shift();
-                    }
-                }
 
-                // Add the overlap buffer
-                for (let i = 0; i < overlapBuffer.length; i++) {
-                    existingBuffer[i].unshift(...overlapBuffer[i].slice(0).reverse());
-                }
+                // Overwrite the end of the current line with the overlap buffer
+                this.currentLine.replaceLeft(overlapBuffer);
 
                 // Add the rest of the glyph characters
-                for (let i = 0; i < glyphToAdd.length; i++) {
-                    existingBuffer[i].unshift(...glyphToAdd[i].slice().reverse().slice(kernDistance).reverse());
-                }
+                this.currentLine.appendMatrixToLeft(glyphToAdd, kernDistance);
             }
+
         } else {
+            this._debug(`Cannot kern/smush "${figCharacter.character}" on to the current line.  Appending at full width.`);
+
             // Otherwise, it's not smush/kernable at all
-            for (let i = 0; i < glyphToAdd.length; i++) {
-                existingBuffer[i].push(...glyphToAdd[i].slice(kernDistance));
+            if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
+                this.currentLine.appendMatrixToRight(this.getGlyphMatrixFromFIGCharacter(figCharacter));
+            } else {
+                this.currentLine.appendMatrixToLeft(this.getGlyphMatrixFromFIGCharacter(figCharacter));
             }
         }
 

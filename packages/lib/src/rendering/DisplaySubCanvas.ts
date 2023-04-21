@@ -36,7 +36,7 @@ export class DisplaySubCanvas extends Debuggable {
     }
 
     constructor(canvas: DisplayCanvas, lineNumber: number, lineHeight: number, lineLength: number) {
-        super(Symbol('DisplaySubCanvas'));
+        super('DisplaySubCanvas');
         this._canvas = canvas;
         this._lineNumber = lineNumber;
         this._lineHeight = lineHeight;
@@ -79,19 +79,103 @@ export class DisplaySubCanvas extends Debuggable {
     getLastFIGCharacter(): FIGCharacter | null {
         return this._lineCharacters[this._lineCharacters.length - 1];
     }
-    
-    getCanvasContext(xPosOffset:number = 0, yPosOffset:number = 0):CanvasContext {
-        return new CanvasContext(this._canvas, this._lineNumber, this.lineWordCount, 0, this._cursorPosition + xPosOffset, yPosOffset)
+
+    getCanvasContext(xPosOffset: number = 0, yPosOffset: number = 0): CanvasContext {
+        return new CanvasContext(this._canvas, this._lineNumber, this.lineWordCount, 0, this._cursorPosition + xPosOffset, yPosOffset);
     }
 
-    appendMatrixToRight(matrix: Matrix<CanvasPixel>) {
-        
+    getPixelAt(xPos: number, yPos: number): CanvasPixel | undefined {
+        if (this._line[yPos] === undefined) {
+            return undefined;
+        }
+        return this._line[yPos][xPos];
+    }
+
+    /**
+     * Overwrites the left-hand columns of the line with the provided matrix. If the provided matrix is wider than
+     * the current line, the line is overwritten (and grown) to match the provided matrix.
+     *
+     * @param matrix
+     */
+    replaceLeft(matrix: Matrix<CanvasPixel>) {
+        for (let i = 0; i < matrix.length; i++) {
+            for (let j = 0; j < matrix[i].length; j++) {
+                const contextFromExistingPixel = this._line[i][j].context;
+                const reversedMatrixLine = matrix[i].slice(0).reverse();
+                if (contextFromExistingPixel.canvasContext) {
+                    // this._debug(`Original Canvas Context ${contextFromExistingPixel.canvasContext.lineWordNumber}`);
+                    matrix[i][j].addCanvasContext(contextFromExistingPixel.canvasContext);
+                }
+                this._line[i][j] = reversedMatrixLine[j];
+                this._debug(`Inserting from (${i}, ${j}) into (${i}, ${j})`);
+            }
+        }
+    }
+
+    /**
+     * Overwrites the right-hand columns of the line with the provided matrix. If the provided matrix is wider than
+     * the current line, the line is overwritten (and grown) to match the provided matrix.
+     *
+     * @param matrix
+     */
+    replaceRight(matrix: Matrix<CanvasPixel>) {
+        for (let i = 0; i < matrix.length; i++) {
+            const existingLineLength = this._line[i].length;
+            for (let j = 0; j < matrix[i].length; j++) {
+                const insertPoint = existingLineLength - (matrix[i].length - j);
+                if (insertPoint >= 0) {
+                    const contextFromExistingPixel = this._line[i][insertPoint].context;
+                    if (contextFromExistingPixel.canvasContext) {
+                        // this._debug(`Original Canvas Context ${contextFromExistingPixel.canvasContext.lineWordNumber}`);
+                        matrix[i][j].addCanvasContext(contextFromExistingPixel.canvasContext);
+                    }
+                    this._line[i][insertPoint] = matrix[i][j];
+                    this._debug(`Inserting from (${i}, ${j}) into (${i}, ${insertPoint})`);
+                }
+            }
+        }
+    }
+
+    /**
+     * Trims columns of characters from the right-hand side of the current line, and updates the cursor accordingly
+     * @param numCols
+     */
+    truncateRight(numCols: number) {
+        for (let i = 0; i < this.lineHeight; i++) {
+            this._line[i].splice(this._line[i].length - numCols, numCols);
+        }
+        this._cursorPosition -= numCols;
+    }
+
+    /**
+     * Appends a matrix of CanvasPixels to the left-hand end of the Display Canvas
+     * 
+     * @param matrix        The matrix to append to the end of the DisplayCanvas
+     * @param startColumn   The column of the matrix from which to start copying data 
+     */
+    appendMatrixToLeft(matrix: Matrix<CanvasPixel>, startColumn: number = 0) {
         const applyCanvasContext = (canvasPixel: CanvasPixel, xPos: number, yPos: number) => {
             canvasPixel.addCanvasContext(this.getCanvasContext(xPos, yPos));
-            this._debug(`Adding canvas context to pixel in DisplaySubCanvs at position ${this._cursorPosition + xPos}, ${yPos}`);
         };
 
-        MatrixUtils.appendMatrixToRight(this._line, matrix, applyCanvasContext);
+        MatrixUtils.appendMatrixToLeft(this._line, matrix, applyCanvasContext, startColumn);
+
+        // Update the cursor
+        this._cursorPosition += matrix[0].length;
+    }
+
+    /**
+     * Appends a matrix of CanvasPixels to the right-hand end of the Display Canvas
+     * 
+     * @param matrix        The matrix to append to the end of the DisplayCanvas
+     * @param startColumn   The column of the matrix from which to start copying data 
+     */
+    appendMatrixToRight(matrix: Matrix<CanvasPixel>, startColumn: number = 0) {
+        const applyCanvasContext = (canvasPixel: CanvasPixel, xPos: number, yPos: number) => {
+            canvasPixel.addCanvasContext(this.getCanvasContext(xPos, yPos));
+        };
+
+        MatrixUtils.appendMatrixToRight(this._line, matrix, applyCanvasContext, startColumn);
 
         // Update the cursor
         this._cursorPosition += matrix[0].length;

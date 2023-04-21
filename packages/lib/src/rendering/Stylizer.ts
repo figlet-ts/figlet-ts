@@ -27,8 +27,8 @@ export class RasterizeContext implements IRasterizeContext {
 
     xPos: number = 0;
     yPos: number = 0;
-    
-    constructor(matrix:Matrix<CanvasPixel>, lineNumber: number, xPos: number, yPos: number) {
+
+    constructor(matrix: Matrix<CanvasPixel>, lineNumber: number, xPos: number, yPos: number) {
         this._matrix = matrix;
         this.updateCursorPosition(lineNumber, xPos, yPos);
     }
@@ -38,16 +38,16 @@ export class RasterizeContext implements IRasterizeContext {
         this.xPos = xPos;
         this.yPos = yPos;
     }
-    
-    get width():number {
+
+    get width(): number {
         return this._matrix[0].length;
     }
-    
-    get height():number {
+
+    get height(): number {
         return this._matrix.length;
     }
-    
-    get lineNumber():number {
+
+    get lineNumber(): number {
         return this._currentLineNumber;
     }
 }
@@ -85,7 +85,7 @@ export class CanvasContext implements ICanvasContext {
     pixelLineXPos: number = 0;
     pixelLineYPos: number = 0;
 
-    constructor(canvas: DisplayCanvas, lineNumber: number, lineWordNumber:number, wordCharacterNumber: number, subCanvasXPos: number, subCanvasYPos: number) {
+    constructor(canvas: DisplayCanvas, lineNumber: number, lineWordNumber: number, wordCharacterNumber: number, subCanvasXPos: number, subCanvasYPos: number) {
         this._canvas = canvas;
         this._lineWordNumber = lineWordNumber;
         this._wordCharacterNumber = wordCharacterNumber;
@@ -97,8 +97,8 @@ export class CanvasContext implements ICanvasContext {
         this.pixelLineXPos = subCanvasXPos;
         this.pixelLineYPos = subCanvasYPos;
     }
-    
-    get canvas():DisplayCanvas {
+
+    get canvas(): DisplayCanvas {
         return this._canvas;
     }
 
@@ -142,10 +142,10 @@ export class CanvasContext implements ICanvasContext {
         return this._canvas.getLine(this._currentLineNumber).lineWordCount;
     }
 
-    get lineWordNumber():number {
+    get lineWordNumber(): number {
         return this._lineWordNumber;
-    };
-    
+    }
+
     get wordCharacterNumber(): number {
         return this._wordCharacterNumber;
     }
@@ -157,12 +157,11 @@ export class CanvasContext implements ICanvasContext {
     get pixelCanvasYPos(): number {
         return this._currentLineNumber * this.lineHeight + this.pixelLineYPos;
     }
-
 }
 
 export abstract class Stylizer extends Debuggable {
     constructor(stylizerName: string) {
-        super(Symbol(stylizerName));
+        super(stylizerName);
     }
 
     abstract applyStyle(pixel: CanvasPixel): string;

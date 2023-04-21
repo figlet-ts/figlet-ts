@@ -146,9 +146,9 @@ describe('Font-based tests', () => {
         // Create canvas for tests
         const dc: DisplayCanvas = new DisplayCanvas(parsedFont, flm);
 
-        dc.addWord(new InputToken('A'), parsedFont);
-        dc.addWord(new InputToken(' '), parsedFont);
-        dc.addWord(new InputToken('B'), parsedFont);
+        dc.addWord(new InputToken('A'));
+        dc.addWord(new InputToken(' '));
+        dc.addWord(new InputToken('B'));
         expect(dc.getTotalWordCount()).toEqual(2);
         expect(dc.getNumberOfLines()).toEqual(2);
     });
@@ -164,10 +164,10 @@ describe('Font-based tests', () => {
         // Create canvas for tests
         const dc: DisplayCanvas = new DisplayCanvas(fontIvrit, flm);
 
-        dc.addWord(InputToken.fromWord('Figlet'), fontIvrit);
-        dc.addWord(InputToken.fromWord('Rules'), fontIvrit);
-        dc.addWord(InputToken.fromWord('\n'), fontIvrit);
-        dc.addWord(InputToken.fromWord('Seriously'), fontIvrit);
+        dc.addWord(InputToken.fromWord('Figlet'));
+        dc.addWord(InputToken.fromWord('Rules'));
+        dc.addWord(InputToken.fromWord('\n'));
+        dc.addWord(InputToken.fromWord('Seriously'));
         expect(dc.getTotalWordCount()).toEqual(3);
         expect(dc.getNumberOfLines()).toEqual(2);
     });

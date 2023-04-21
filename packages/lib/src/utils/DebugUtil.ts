@@ -1,10 +1,10 @@
 import Debug from 'debug';
 
 export abstract class Debuggable {
-    protected _debug:Debug.Debugger;
+    protected _debug: Debug.Debugger;
 
-    constructor(debugSymbol:symbol) {
-        this._debug = Debugger.getNamespacedDebugger(debugSymbol.toString());
+    constructor(debugName: string) {
+        this._debug = Debugger.getNamespacedDebugger(debugName);
     }
 }
 

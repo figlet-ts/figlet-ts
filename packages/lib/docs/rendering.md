@@ -2,8 +2,8 @@
 
 1. Parse an string into InputTokens (words, spaces and newlines)
 2. Create a DisplayCanvas with a width of renderWidth and a single SubCanvas as the current (and only) line
-3. Iterate through each character of each InputToken and add to the current line.  Once a character has been added and kerned/smushed, check if the line is longer than the requested canvas.renderWidth:
-    1. If currentLine.width > canvas.renderWidth then 
+3. Iterate through each character of each InputToken and add to the current line. Once a character has been added and kerned/smushed, check if the line is longer than the requested canvas.renderWidth:
+    1. If currentLine.width > canvas.renderWidth then
 
 <style rel="stylesheet">
 displaycanvas {
