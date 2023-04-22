@@ -1,5 +1,5 @@
 import { LayoutRulesBase } from '../layoutRules/LayoutRulesBase';
-import {Debuggable, ExternalDebuggable} from '../utils/DebugUtil';
+import { ExternalDebuggable } from '../utils/DebugUtil';
 import { Matrix } from '../utils/MatrixUtils';
 import { CanvasPixel, CanvasPixelContext } from './CanvasPixel';
 

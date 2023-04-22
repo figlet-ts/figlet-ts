@@ -1,6 +1,6 @@
 import stringWidth from 'string-width';
 import { type FontLayoutManagerOptions } from './FontLayoutManagerOptions';
-import { ASCIICodes } from './utils/ASCIICodes';
+import { CharacterCodes } from './utils/CharacterCodes';
 import { CharacterReplacementMap } from './utils/CharacterReplacementMap';
 
 export class FontLayoutManagerOptionsExtensionCharacterReplacement {
@@ -11,12 +11,12 @@ export class FontLayoutManagerOptionsExtensionCharacterReplacement {
 
     resetWhitespaceCharacter() {
         this._driverOptions._renderingWhitespaceCharacter = ' ';
-        this.addBodyTextCharacterReplacer(ASCIICodes.SPACE, ' ');
+        this.addBodyTextCharacterReplacer(CharacterCodes.ASCII_SPACE, ' ');
     }
 
     setWhitespaceCharacter(char: string) {
         this._driverOptions._renderingWhitespaceCharacter = char;
-        this.addBodyTextCharacterReplacer(ASCIICodes.SPACE, char);
+        this.addBodyTextCharacterReplacer(CharacterCodes.ASCII_SPACE, char);
     }
 
     getWhitespaceCharacter(): string {
@@ -49,8 +49,8 @@ export class FontLayoutManagerOptionsExtensionCharacterReplacement {
 
     setPaddingCharacter(char: string) {
         this._driverOptions._renderingPaddingCharacter = char;
-        this._driverOptions._paddingCharacterMap.set(ASCIICodes.FIGLET_TS_LEFT_PADDING_MARKER, char);
-        this._driverOptions._paddingCharacterMap.set(ASCIICodes.FIGLET_TS_RIGHT_PADDING_MARKER, char);
+        this._driverOptions._paddingCharacterMap.set(CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER, char);
+        this._driverOptions._paddingCharacterMap.set(CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER, char);
     }
 
     getBodyTextCharacterMap(): CharacterReplacementMap {

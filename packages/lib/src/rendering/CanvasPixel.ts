@@ -1,12 +1,14 @@
 import { FIGCharacter } from '../FIGCharacter';
-import { ASCIICodes } from '../utils/ASCIICodes';
+import { CharacterCodes } from '../utils/CharacterCodes';
+import { CanvasContext } from './contexts/ICanvasContext';
+import { SubCanvasContext } from './contexts/SubCanvasContext';
+import { WordContext } from './contexts/WordContext';
 import { RasterizeContext } from './Stylizer';
-import {WordContext} from "./contexts/WordContext";
-import {CanvasContext} from "./contexts/ICanvasContext";
 
 export interface CanvasPixelContext {
     figCharacter?: FIGCharacter;
     canvasContext?: CanvasContext;
+    subCanvasContext?: SubCanvasContext;
     rasterizeContext?: RasterizeContext;
     wordContext?: WordContext;
     // inputToken?: InputToken;
@@ -32,6 +34,10 @@ export class CanvasPixel {
         this.context.canvasContext = canvasContext;
     }
 
+    public addSubCanvasContext(subCanvasContext: SubCanvasContext) {
+        this.context.subCanvasContext = subCanvasContext;
+    }
+
     public addRasterizeContext(rasterizeContext: RasterizeContext) {
         this.context.rasterizeContext = rasterizeContext;
     }
@@ -48,6 +54,6 @@ export class CanvasPixel {
     }
 
     static getWhitespacePixel(): CanvasPixel {
-        return new CanvasPixel(ASCIICodes.SPACE);
+        return new CanvasPixel(CharacterCodes.ASCII_SPACE);
     }
 }

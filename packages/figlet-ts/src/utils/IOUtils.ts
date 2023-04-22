@@ -44,14 +44,14 @@ export class IOUtils {
     }
 
     /**
-     * Binds a handler to the on('data') event on stdin, and 
-     * 
+     * Binds a handler to the on('data') event on stdin, and
+     *
      * @param dataLineHandler
      * @return boolean          Returns true if the session is TTY (interactive) and false otherwise
      */
     static bindStdin(dataLineHandler: (data: Buffer) => void): boolean {
         process.stdin.on('data', dataLineHandler);
-        
+
         return process.stdin.isTTY;
     }
 

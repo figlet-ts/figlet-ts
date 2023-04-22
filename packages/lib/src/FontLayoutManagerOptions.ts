@@ -8,15 +8,15 @@ import { FontLayoutManagerOptionsExtensionHorizontalLayout } from './FontLayoutM
 import { FontLayoutManagerOptionsExtensionHorizontalSmushingRules } from './FontLayoutManagerOptionsExtensionHorizontalSmushingRules';
 import { FontLayoutManagerOptionsExtensionPadding } from './FontLayoutManagerOptionsExtensionPadding';
 import { FontLayoutManagerOptionsExtensionPrintDirection } from './FontLayoutManagerOptionsExtensionPrintDirection';
+import { FontLayoutManagerOptionsExtensionStylizer } from './FontLayoutManagerOptionsExtensionStylizer';
 import { FontLayoutManagerOptionsExtensionVerticalLayout } from './FontLayoutManagerOptionsExtensionVerticalLayout';
 import { FontLayoutManagerOptionsExtensionVerticalSmushingRules } from './FontLayoutManagerOptionsExtensionVerticalSmushingRules';
 import { FontLayoutManagerOptionsExtensionWidth } from './FontLayoutManagerOptionsExtensionWidth';
 import { DefaultLayoutRules } from './layoutRules/DefaultLayoutRules';
 import { LayoutRulesBase } from './layoutRules/LayoutRulesBase';
 import { Stylizer } from './rendering/Stylizer';
-import { ASCIICodes } from './utils/ASCIICodes';
+import { CharacterCodes } from './utils/CharacterCodes';
 import { CharacterReplacementMap } from './utils/CharacterReplacementMap';
-import {FontLayoutManagerOptionsExtensionStylizer} from "./FontLayoutManagerOptionsExtensionStylizer";
 
 export class FontLayoutManagerOptions extends LayoutRulesBase {
     _overrideHorizontalEqualCharacterSmushing: boolean | undefined;
@@ -51,15 +51,15 @@ export class FontLayoutManagerOptions extends LayoutRulesBase {
     readonly _bodyTextCharacterMap: CharacterReplacementMap = new CharacterReplacementMap(
         new Map<number, string>([
             [0, ' '],
-            [ASCIICodes.SPACE, this._renderingWhitespaceCharacter]
+            [CharacterCodes.ASCII_SPACE, this._renderingWhitespaceCharacter]
         ])
     );
 
     readonly _paddingCharacterMap: CharacterReplacementMap = new CharacterReplacementMap(
         new Map<number, string>([
-            [ASCIICodes.FIGLET_TS_LEFT_PADDING_MARKER, this._renderingPaddingCharacter],
-            [ASCIICodes.FIGLET_TS_RIGHT_PADDING_MARKER, this._renderingPaddingCharacter],
-            [ASCIICodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE, ' ']
+            [CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER, this._renderingPaddingCharacter],
+            [CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER, this._renderingPaddingCharacter],
+            [CharacterCodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE, ' ']
         ])
     );
 

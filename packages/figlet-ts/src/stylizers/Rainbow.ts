@@ -13,7 +13,7 @@ export class Rainbow extends Stylizer {
 
     init() {
         // Setup a rainbow palette based on the width of the output
-        const startColour = tinycolor('#00f');
+        const startColour = tinycolor('#f00');
 
         const stepSize = 360 / this._numColours;
 
@@ -32,29 +32,39 @@ export class Rainbow extends Stylizer {
         //     // if (pixelContext.wordContext.characterPos === 0) {
         //     //     return chalk.hex(this._giantGoldfish[4])(character);
         //     // }
-        //    
+        //
         //     // return chalk.hex(this._giantGoldfish[0])(character);
         // }
-        if (pixelContext.canvasContext) {
-            return chalk.hex(this._palette[Math.floor((pixelContext.canvasContext.lineWordNumber/pixelContext.canvasContext.lineWordCount) * 100)].toHex())(character);
-            // if (pixelContext.wordContext.characterPos === 0) {
-            //     return chalk.hex(this._giantGoldfish[4])(character);
-            // }
-            
-            // return chalk.hex(this._giantGoldfish[0])(character);
-        }
-        // if (pixelContext.canvasContext !== undefined) {
-        //     this._debug(`(${pixelContext.rasterizeContext.xPos}, ${pixelContext.rasterizeContext.yPos}) => ${pixelContext.rasterizeContext.xPos % this._numColours}`);
-        //     return chalk.hex(this._palette[pixelContext.rasterizeContext.xPos % this._numColours].toHex())(character);
-        // } else {
-        //     this._debug('No rasterizeContext');
+        
+        // if (pixelContext.subCanvasContext) {
+        //     return chalk.hex(this._palette[Math.floor((pixelContext.subCanvasContext.wordNumber / pixelContext.subCanvasContext.wordCount) * 100)].toHex())(character);
         // }
+
+        // if (pixelContext.wordContext) {
+        //     if (pixelContext.wordContext === 0) {
+        //         return chalk.hex(this._giantGoldfish[4])(character);
+        //     }
+        //
+        //     return chalk.hex(this._giantGoldfish[0])(character);
+        // }
+
+        if (pixelContext.rasterizeContext !== undefined) {
+            // this._debug(`(${pixelContext.rasterizeContext.xPos}, ${pixelContext.rasterizeContext.yPos}) => ${pixelContext.rasterizeContext.xPos % this._numColours}`);
+            return chalk.bgHex(this._palette[pixelContext.rasterizeContext.xPos % this._numColours].toHex()).bold.whiteBright(character);
+        } else {
+            this._debug('No rasterizeContext');
+        }
+
         // if (pixelContext.rasterizeContext !== undefined) {
         //     this._debug(`(${pixelContext.rasterizeContext.xPos}, ${pixelContext.rasterizeContext.yPos}) => ${pixelContext.rasterizeContext.xPos % this._numColours}`);
         //     return chalk.hex(this._palette[pixelContext.rasterizeContext.xPos % this._numColours].toHex())(character);
         // } else {
         //     this._debug('No rasterizeContext');
         // }
+
+        // if (pixelContext.canvasContext !== undefined) {
+        //     return chalk.hex(this._palette[Math.floor((pixelContext.canvasContext.currentSubCanvasNumber / pixelContext.canvasContext.subCanvasCount)) * this._numColours].toHex())(character);
+        // } 
 
         return character;
     }

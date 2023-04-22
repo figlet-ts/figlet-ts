@@ -1,4 +1,4 @@
-import {InputToken} from "../../utils/InputToken";
+import { InputToken } from '../../utils/InputToken';
 
 export interface IWordContext {
     word: string;

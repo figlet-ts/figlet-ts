@@ -4,7 +4,7 @@ import { FontLayoutHorizontalPaddingMode } from '../enums/FontLayoutHorizontalPa
 import { FIGCharacter } from '../FIGCharacter';
 import { FIGFont } from '../FIGFont';
 import { FontLayoutManager } from '../FontLayoutManager';
-import { ASCIICodes } from '../utils/ASCIICodes';
+import { CharacterCodes } from '../utils/CharacterCodes';
 import { Debuggable } from '../utils/DebugUtil';
 import { InputToken } from '../utils/InputToken';
 import { Matrix, MatrixUtils, MultilineMatrix } from '../utils/MatrixUtils';
@@ -71,15 +71,15 @@ export class DisplayCanvas extends Debuggable {
         this.currentLine.incrementWordCount();
     }
 
-    // getCanvasContext(xPosOffset: number = 0, yPosOffset: number = 0): CanvasContext {
-    //     // return new CanvasContext(this._canvas, this._lineNumber, this.lineWordCount, 0, this._cursorPosition + xPosOffset, yPosOffset);
-    // }
+    getCanvasContext(): CanvasContext {
+        return new CanvasContext(this, this._currentLine);
+    }
 
     public addFIGCharacter(figCharacter: FIGCharacter, canvasPixelContext: CanvasPixelContext = {}): boolean {
         this._debug(`Adding ${figCharacter.character} with wordContext character position ${canvasPixelContext.wordContext?.characterPos}`);
         // const sr = this._flm.doSmush(this.getLastFIGCharacter(), figCharacter);
         // this.appendSmushResult(sr);
-        canvasPixelContext.canvasContext = this.currentLine.getSubCanvasContext()
+
         this.addFCToCurrentLine(figCharacter, canvasPixelContext);
 
         // Check if we've exceeded the selected rendering width
@@ -184,7 +184,7 @@ export class DisplayCanvas extends Debuggable {
             switch (alignment) {
                 case FontLayoutHorizontalAlignment.LEFT_ALIGN:
                     if (horizontalPaddingMode === FontLayoutHorizontalPaddingMode.FULL_PADDING) {
-                        buff[i].push(...new Array(targetWidth - arrayWidth).fill(new CanvasPixel(ASCIICodes.FIGLET_TS_RIGHT_PADDING_MARKER)));
+                        buff[i].push(...new Array(targetWidth - arrayWidth).fill(new CanvasPixel(CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER)));
                     }
                     break;
 
@@ -194,10 +194,10 @@ export class DisplayCanvas extends Debuggable {
                         const rightPad = Math.ceil((targetWidth - arrayWidth) / 2);
                         if (horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_PADDING) {
                             if (horizontalPaddingMode === FontLayoutHorizontalPaddingMode.FULL_PADDING || horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_LEFT_PADDING) {
-                                buff[i].unshift(...new Array(leftPad).fill(new CanvasPixel(ASCIICodes.FIGLET_TS_LEFT_PADDING_MARKER)));
+                                buff[i].unshift(...new Array(leftPad).fill(new CanvasPixel(CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER)));
                             }
                             if (horizontalPaddingMode === FontLayoutHorizontalPaddingMode.FULL_PADDING || horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_RIGHT_PADDING) {
-                                buff[i].push(...new Array(rightPad).fill(new CanvasPixel(ASCIICodes.FIGLET_TS_RIGHT_PADDING_MARKER)));
+                                buff[i].push(...new Array(rightPad).fill(new CanvasPixel(CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER)));
                             }
                         }
                     }
@@ -205,7 +205,7 @@ export class DisplayCanvas extends Debuggable {
 
                 case FontLayoutHorizontalAlignment.RIGHT_ALIGN:
                     if (horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_PADDING && horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_LEFT_PADDING) {
-                        buff[i].unshift(...new Array(Math.floor(targetWidth - arrayWidth)).fill(new CanvasPixel(ASCIICodes.FIGLET_TS_LEFT_PADDING_MARKER)));
+                        buff[i].unshift(...new Array(Math.floor(targetWidth - arrayWidth)).fill(new CanvasPixel(CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER)));
                     }
                     break;
                 default:
@@ -273,7 +273,7 @@ export class DisplayCanvas extends Debuggable {
                             pixel = CanvasPixel.getWhitespacePixel();
                         }
 
-                        if (!pixel.equals(ASCIICodes.SPACE)) {
+                        if (!pixel.equals(CharacterCodes.ASCII_SPACE)) {
                             break;
                         } else {
                             dist++;
@@ -287,7 +287,7 @@ export class DisplayCanvas extends Debuggable {
                         if (pixel.equals(this._font.hardblankCharacter) || this._flm.options.characterReplacement.getPaddingCharacterMap().has(pixel.character)) {
                             pixel = CanvasPixel.getWhitespacePixel();
                         }
-                        if (!pixel.equals(ASCIICodes.SPACE)) {
+                        if (!pixel.equals(CharacterCodes.ASCII_SPACE)) {
                             break;
                         } else {
                             dist++;
@@ -442,36 +442,36 @@ export class DisplayCanvas extends Debuggable {
                 // Plus any single-space padding to accommodate imperfect division
                 const singleCharacterPaddingAmount = tuple[1] % outputCharWidth;
 
-                if (tuple[0] === ASCIICodes.FIGLET_TS_RIGHT_PADDING_MARKER) {
+                if (tuple[0] === CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER) {
                     // If we're replacing a right-hand padding marker, we prefix any extra single-space padding
                     toInsert.unshift(
-                        ...new Array(Math.floor(singleCharacterPaddingAmount)).fill(this._flm.characterReplacement.getPaddingCharacterMap().get(ASCIICodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE))
+                        ...new Array(Math.floor(singleCharacterPaddingAmount)).fill(this._flm.characterReplacement.getPaddingCharacterMap().get(CharacterCodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE))
                     );
-                } else if (tuple[0] === ASCIICodes.FIGLET_TS_LEFT_PADDING_MARKER) {
+                } else if (tuple[0] === CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER) {
                     // If we're replacing a left-hand padding marker, we suffix any extra single-space padding
                     toInsert.push(
-                        ...new Array(Math.floor(singleCharacterPaddingAmount)).fill(this._flm.characterReplacement.getPaddingCharacterMap().get(ASCIICodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE))
+                        ...new Array(Math.floor(singleCharacterPaddingAmount)).fill(this._flm.characterReplacement.getPaddingCharacterMap().get(CharacterCodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE))
                     );
                 } else {
                     // Any other marker, we place the padding based on the rendering alignment
                     switch (this._flm.options.getRenderingAlignment()) {
                         case FontLayoutHorizontalAlignment.LEFT_ALIGN:
-                            toInsert.push(...new Array(singleCharacterPaddingAmount).fill(this._flm.characterReplacement.getPaddingCharacterMap().get(ASCIICodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE)));
+                            toInsert.push(...new Array(singleCharacterPaddingAmount).fill(this._flm.characterReplacement.getPaddingCharacterMap().get(CharacterCodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE)));
                             break;
                         case FontLayoutHorizontalAlignment.RIGHT_ALIGN:
                             toInsert.unshift(
-                                ...new Array(singleCharacterPaddingAmount).fill(this._flm.characterReplacement.getPaddingCharacterMap().get(ASCIICodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE))
+                                ...new Array(singleCharacterPaddingAmount).fill(this._flm.characterReplacement.getPaddingCharacterMap().get(CharacterCodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE))
                             );
                             break;
                         case FontLayoutHorizontalAlignment.CENTRE_ALIGN:
                             toInsert.unshift(
                                 ...new Array(Math.floor(singleCharacterPaddingAmount / 2)).fill(
-                                    this._flm.characterReplacement.getPaddingCharacterMap().get(ASCIICodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE)
+                                    this._flm.characterReplacement.getPaddingCharacterMap().get(CharacterCodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE)
                                 )
                             );
                             toInsert.push(
                                 ...new Array(Math.ceil(singleCharacterPaddingAmount / 2)).fill(
-                                    this._flm.characterReplacement.getPaddingCharacterMap().get(ASCIICodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE)
+                                    this._flm.characterReplacement.getPaddingCharacterMap().get(CharacterCodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE)
                                 )
                             );
                             break;
@@ -509,6 +509,8 @@ export class DisplayCanvas extends Debuggable {
     public addFCToCurrentLine(figCharacter: FIGCharacter, canvasPixelContext: CanvasPixelContext = {}) {
         // This method does not care about line length, etc.  It will always suceed in adding a FIGCharacter to the end of a line:
 
+        canvasPixelContext.canvasContext = this.getCanvasContext();
+        
         // If the line is empty, or if we're not kerning or smushing, just add the character
         // console.debug(`Adding FC for ${figCharacter.character}`);
         if (!(this._flm.options.doHorizontalKerning() || this._flm.options.doHorizontalSmushing())) {
@@ -547,7 +549,7 @@ export class DisplayCanvas extends Debuggable {
             for (let k = 0; k < maxKernTestingDistance; k++) {
                 const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? this.currentLine.lineLength - 1 - k : k;
                 const pixel = this.currentLine.getPixelAt(existingBufferIndex, j) ?? CanvasPixel.getWhitespacePixel();
-                if (!pixel.equals(ASCIICodes.SPACE)) {
+                if (!pixel.equals(CharacterCodes.ASCII_SPACE)) {
                     break;
                 } else {
                     dist++;
@@ -586,7 +588,7 @@ export class DisplayCanvas extends Debuggable {
             // Loop over each row
             for (let i = 0; i < this._lineHeight; i++) {
                 overlapBuffer[i] = [];
-                for (let j= 0; j < kernDistance && canSmush; j++) {
+                for (let j = 0; j < kernDistance && canSmush; j++) {
                     const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? this.currentLine.lineLength - kernDistance + j : j;
                     const newGlyphBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? j : glyphToAdd[i].length - kernDistance + j;
 
@@ -597,19 +599,18 @@ export class DisplayCanvas extends Debuggable {
 
                     const newGlyphChar = glyphToAdd[i][newGlyphBufferIndex] ?? CanvasPixel.getWhitespacePixel();
                     newGlyphChar.addContext(canvasPixelContext);
-                    
+
                     const smushResult = this._flm.getHorizontalSmushCharacter(existingChar, newGlyphChar, this._font.hardblankCharacter);
 
                     // console.debug(`LEFT: ${String.fromCharCode(existingChar)}(from idx: ${existingBufferIndex})    RIGHT: ${String.fromCharCode(newGlyphChar)}(from idx: ${newGlyphBufferIndex})  RESULT: ${String.fromCharCode(smushResult)}`)
 
                     // If we can smush
                     if (smushResult !== null) {
-                        console.log(`Smushing - got canvasContext? ${canvasPixelContext.canvasContext!==undefined}`);
                         // Ensure the smush result has the canvas context applied to it, if it doesn't already have one
                         if (canvasPixelContext.canvasContext && !smushResult.context.canvasContext) {
                             smushResult.addCanvasContext(canvasPixelContext.canvasContext);
                         }
-                        
+
                         if (this.currentLine.lineLength - kernDistance + j >= 0) {
                             if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
                                 overlapBuffer[i].push(smushResult);
@@ -630,15 +631,12 @@ export class DisplayCanvas extends Debuggable {
             this._debug(`Can kern/smush "${figCharacter.character}" on to the current line with an overlap of ${overlapBuffer[0].length} columns`);
 
             if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
-                
                 // Overwrite the end of the current line with the overlap buffer
                 this.currentLine.replaceRight(overlapBuffer);
-                
+
                 // Add the rest of the glyph characters
                 this.currentLine.appendMatrixToRight(glyphToAdd, kernDistance, canvasPixelContext);
-                
             } else if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.RIGHT_TO_LEFT) {
-
                 // Overwrite the end of the current line with the overlap buffer
                 this.currentLine.replaceLeft(overlapBuffer);
 

@@ -1,103 +1,64 @@
 import { DisplayCanvas } from '../DisplayCanvas';
 
 export interface ICanvasContext {
-    canvasWidth: number;
-    canvasHeight: number;
-    canvasLineCount: number;
-    canvasWordCount: number;
-    canvasCharacterCount: number;
+    width: number;
+    height: number;
+    subCanvasCount: number;
+    minSubCanvasWidth: number;
+    maxSubCanvasWidth: number;
+    wordCount: number;
+    characterCount: number;
 
-    lineWidth: number;
-    lineHeight: number;
-    lineNumber: number;
-    lineWordCount: number;
-    lineCharacterCount: number;
-
-    lineWordNumber: number;
-    wordCharacterNumber: number;
-
-    pixelCanvasXPos: number;
-    pixelCanvasYPos: number;
-
-    pixelLineXPos: number;
-    pixelLineYPos: number;
+    currentSubCanvasNumber: number;
 }
 
 export class CanvasContext implements ICanvasContext {
-    private _canvas: DisplayCanvas;
-    private _currentLineNumber: number = 0;
-    private _lineWordNumber: number = 0;
-    private _wordCharacterNumber: number = 0;
+    private readonly _canvas: DisplayCanvas;
 
-    pixelLineXPos: number = 0;
-    pixelLineYPos: number = 0;
+    private _currentSubCanvasNumber: number = 0;
 
-    constructor(canvas: DisplayCanvas, lineNumber: number, lineWordNumber: number, wordCharacterNumber: number, subCanvasXPos: number, subCanvasYPos: number) {
+    constructor(canvas: DisplayCanvas, subCanvasNumber: number) {
         this._canvas = canvas;
-        this._lineWordNumber = lineWordNumber;
-        this._wordCharacterNumber = wordCharacterNumber;
-        this.updateCursorPosition(lineNumber, subCanvasXPos, subCanvasYPos);
+        this._currentSubCanvasNumber = subCanvasNumber;
     }
 
-    private updateCursorPosition(lineNumber: number, subCanvasXPos: number, subCanvasYPos: number) {
-        this._currentLineNumber = lineNumber;
-        this.pixelLineXPos = subCanvasXPos;
-        this.pixelLineYPos = subCanvasYPos;
-    }
-
-    get canvasCharacterCount(): number {
-        return this._canvas.getTotalCharacterCount();
-    }
-
-    get canvasHeight(): number {
-        return this._canvas.getHeight();
-    }
-
-    get canvasWidth(): number {
+    get width(): number {
         return this._canvas.getTargetWidth();
     }
 
-    get canvasLineCount(): number {
+    get height(): number {
+        return this._canvas.getHeight();
+    }
+
+    get subCanvasCount(): number {
         return this._canvas.getLineCount();
     }
 
-    get canvasWordCount(): number {
+    get minSubCanvasWidth(): number {
+        let minWidth = Infinity;
+        for (let i = 0; i < this._canvas.getNumberOfLines(); i++) {
+            minWidth = Math.min(minWidth, this._canvas.getLine(i).lineLength);
+        }
+        return minWidth;
+    }
+
+    get maxSubCanvasWidth(): number {
+        let maxWidth = Infinity;
+        for (let i = 0; i < this._canvas.getNumberOfLines(); i++) {
+            maxWidth = Math.max(maxWidth, this._canvas.getLine(i).lineLength);
+        }
+        return maxWidth;
+    }
+
+    get wordCount(): number {
         return this._canvas.getWordCount();
     }
 
-    get lineCharacterCount(): number {
-        return this._canvas.getLine(this._currentLineNumber).lineCharacters.length;
+    get characterCount(): number {
+        return this._canvas.getTotalCharacterCount();
     }
 
-    get lineHeight(): number {
-        return this._canvas.getLine(this._currentLineNumber).lineHeight;
-    }
-
-    get lineWidth(): number {
-        return this._canvas.getLine(this._currentLineNumber).lineLength;
-    }
-
-    get lineNumber(): number {
-        return this._currentLineNumber;
-    }
-
-    get lineWordCount(): number {
-        return this._canvas.getLine(this._currentLineNumber).lineWordCount;
-    }
-
-    get lineWordNumber(): number {
-        return this._lineWordNumber;
-    }
-
-    get wordCharacterNumber(): number {
-        return this._wordCharacterNumber;
-    }
-
-    get pixelCanvasXPos(): number {
-        return this.pixelLineXPos;
-    }
-
-    get pixelCanvasYPos(): number {
-        return this._currentLineNumber * this.lineHeight + this.pixelLineYPos;
+    get currentSubCanvasNumber(): number {
+        return this._currentSubCanvasNumber;
     }
 }

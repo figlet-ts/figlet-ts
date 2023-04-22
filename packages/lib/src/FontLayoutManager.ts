@@ -7,14 +7,14 @@ import { FontLayoutManagerOptionsExtensionHorizontalLayout } from './FontLayoutM
 import { FontLayoutManagerOptionsExtensionHorizontalSmushingRules } from './FontLayoutManagerOptionsExtensionHorizontalSmushingRules';
 import { FontLayoutManagerOptionsExtensionPadding } from './FontLayoutManagerOptionsExtensionPadding';
 import { FontLayoutManagerOptionsExtensionPrintDirection } from './FontLayoutManagerOptionsExtensionPrintDirection';
+import { FontLayoutManagerOptionsExtensionStylizer } from './FontLayoutManagerOptionsExtensionStylizer';
 import { FontLayoutManagerOptionsExtensionVerticalLayout } from './FontLayoutManagerOptionsExtensionVerticalLayout';
 import { FontLayoutManagerOptionsExtensionVerticalSmushingRules } from './FontLayoutManagerOptionsExtensionVerticalSmushingRules';
 import { FontLayoutManagerOptionsExtensionWidth } from './FontLayoutManagerOptionsExtensionWidth';
 import { CanvasPixel } from './rendering/CanvasPixel';
 import { DisplayCanvas } from './rendering/DisplayCanvas';
-import { ASCIICodes } from './utils/ASCIICodes';
+import { CharacterCodes } from './utils/CharacterCodes';
 import { InputTokenParser } from './utils/InputTokenParser';
-import {FontLayoutManagerOptionsExtensionStylizer} from "./FontLayoutManagerOptionsExtensionStylizer";
 
 export class FontLayoutManager {
     private _options: FontLayoutManagerOptions;
@@ -53,40 +53,40 @@ export class FontLayoutManager {
     private readonly UNDERSCORE_SMUSHING_REPLACERS = new Set<number>(['|', '/', '\\', '[', ']', '{', '}', '(', ')', '<', '>'].map((x) => x.charCodeAt(0)));
 
     private readonly HIERARCHY_SMUSHING_CLASSES: number[][] = [
-        [ASCIICodes.PIPE],
-        [ASCIICodes.FORWARD_SLASH, ASCIICodes.BACKWARD_SLASH],
-        [ASCIICodes.OPEN_BRACKET, ASCIICodes.CLOSED_BRACKET],
-        [ASCIICodes.OPEN_BRACE, ASCIICodes.CLOSED_BRACE],
-        [ASCIICodes.OPEN_PARENTHESIS, ASCIICodes.CLOSED_PARENTHESIS],
-        [ASCIICodes.LESS_THAN, ASCIICodes.GREATER_THAN]
+        [CharacterCodes.ASCII_PIPE],
+        [CharacterCodes.ASCII_FORWARD_SLASH, CharacterCodes.ASCII_BACKWARD_SLASH],
+        [CharacterCodes.ASCII_OPEN_BRACKET, CharacterCodes.ASCII_CLOSED_BRACKET],
+        [CharacterCodes.ASCII_OPEN_BRACE, CharacterCodes.ASCII_CLOSED_BRACE],
+        [CharacterCodes.ASCII_OPEN_PARENTHESIS, CharacterCodes.ASCII_CLOSED_PARENTHESIS],
+        [CharacterCodes.ASCII_LESS_THAN, CharacterCodes.ASCII_GREATER_THAN]
     ];
 
     private readonly OPPOSITE_PAIR_SMUSHING_PAIRS: Array<Set<number>> = [
-        new Set([ASCIICodes.OPEN_BRACKET, ASCIICodes.CLOSED_BRACKET]),
-        new Set([ASCIICodes.OPEN_BRACE, ASCIICodes.CLOSED_BRACE]),
-        new Set([ASCIICodes.OPEN_PARENTHESIS, ASCIICodes.CLOSED_PARENTHESIS])
+        new Set([CharacterCodes.ASCII_OPEN_BRACKET, CharacterCodes.ASCII_CLOSED_BRACKET]),
+        new Set([CharacterCodes.ASCII_OPEN_BRACE, CharacterCodes.ASCII_CLOSED_BRACE]),
+        new Set([CharacterCodes.ASCII_OPEN_PARENTHESIS, CharacterCodes.ASCII_CLOSED_PARENTHESIS])
     ];
 
     private readonly BIG_X_SMUSHING_PAIRS: [number, number, number][] = [
-        [ASCIICodes.FORWARD_SLASH, ASCIICodes.BACKWARD_SLASH, ASCIICodes.PIPE],
-        [ASCIICodes.BACKWARD_SLASH, ASCIICodes.FORWARD_SLASH, 'Y'.charCodeAt(0)],
-        [ASCIICodes.GREATER_THAN, ASCIICodes.LESS_THAN, 'X'.charCodeAt(0)]
+        [CharacterCodes.ASCII_FORWARD_SLASH, CharacterCodes.ASCII_BACKWARD_SLASH, CharacterCodes.ASCII_PIPE],
+        [CharacterCodes.ASCII_BACKWARD_SLASH, CharacterCodes.ASCII_FORWARD_SLASH, 'Y'.charCodeAt(0)],
+        [CharacterCodes.ASCII_GREATER_THAN, CharacterCodes.ASCII_LESS_THAN, 'X'.charCodeAt(0)]
     ];
 
     private readonly VERTICAL_HORIZONTAL_LINE_CHARACTERS: number[] = ['-'.charCodeAt(0), '_'.charCodeAt(0)];
 
     public getHorizontalSmushCharacter(lChar: CanvasPixel, rChar: CanvasPixel, hardblankCharacter: number): CanvasPixel | null {
         if (lChar.equals(-1)) {
-            if (rChar.equals(ASCIICodes.SPACE)) {
+            if (rChar.equals(CharacterCodes.ASCII_SPACE)) {
                 return CanvasPixel.getWhitespacePixel();
             }
             return null;
         }
 
-        if (lChar.equals(0) || lChar.equals(ASCIICodes.SPACE)) {
+        if (lChar.equals(0) || lChar.equals(CharacterCodes.ASCII_SPACE)) {
             return rChar;
         }
-        if (rChar.equals(ASCIICodes.SPACE)) {
+        if (rChar.equals(CharacterCodes.ASCII_SPACE)) {
             return lChar;
         }
 
@@ -127,10 +127,10 @@ export class FontLayoutManager {
 
         // UNDERSCORE SMUSHING
         if (this._options.doHorizontalUnderscoreSmushing()) {
-            if (lChar.equals(ASCIICodes.UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(rChar.character)) {
+            if (lChar.equals(CharacterCodes.ASCII_UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(rChar.character)) {
                 return rChar;
             }
-            if (rChar.equals(ASCIICodes.UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(lChar.character)) {
+            if (rChar.equals(CharacterCodes.ASCII_UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(lChar.character)) {
                 return lChar;
             }
         }
@@ -152,7 +152,7 @@ export class FontLayoutManager {
         // OPPOSITE PAIR SMUSHING
         if (this._options.doHorizontalOppositePairSmushing()) {
             if (!rChar.equals(lChar) && this.OPPOSITE_PAIR_SMUSHING_PAIRS.filter((s) => s.has(lChar.character) && s.has(rChar.character)).length > 0) {
-                return new CanvasPixel(ASCIICodes.PIPE);
+                return new CanvasPixel(CharacterCodes.ASCII_PIPE);
             }
         }
 
@@ -189,11 +189,11 @@ export class FontLayoutManager {
             bottomPixel = CanvasPixel.getWhitespacePixel();
         }
 
-        if (topPixel.equals(0) || topPixel.equals(ASCIICodes.SPACE)) {
+        if (topPixel.equals(0) || topPixel.equals(CharacterCodes.ASCII_SPACE)) {
             return bottomPixel;
         }
 
-        if (bottomPixel.equals(ASCIICodes.SPACE)) {
+        if (bottomPixel.equals(CharacterCodes.ASCII_SPACE)) {
             return topPixel;
         }
 
@@ -218,10 +218,10 @@ export class FontLayoutManager {
 
         // UNDERSCORE SMUSHING
         if (this._options.doVerticalUnderscoreSmushing()) {
-            if (topPixel.equals(ASCIICodes.UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(bottomPixel.character)) {
+            if (topPixel.equals(CharacterCodes.ASCII_UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(bottomPixel.character)) {
                 return bottomPixel;
             }
-            if (bottomPixel.equals(ASCIICodes.UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(topPixel.character)) {
+            if (bottomPixel.equals(CharacterCodes.ASCII_UNDERSCORE) && this.UNDERSCORE_SMUSHING_REPLACERS.has(topPixel.character)) {
                 return topPixel;
             }
         }

@@ -1,10 +1,10 @@
 import { FIGCharacter } from '../FIGCharacter';
 import { Debuggable } from '../utils/DebugUtil';
 import { Matrix, MatrixUtils } from '../utils/MatrixUtils';
-import {CanvasPixel, CanvasPixelContext} from './CanvasPixel';
+import { CanvasPixel, CanvasPixelContext } from './CanvasPixel';
 import { DisplayCanvas } from './DisplayCanvas';
 
-import {CanvasContext} from "./contexts/ICanvasContext";
+import { SubCanvasContext } from './contexts/SubCanvasContext';
 
 export class DisplaySubCanvas extends Debuggable {
     private readonly _canvas: DisplayCanvas;
@@ -81,8 +81,8 @@ export class DisplaySubCanvas extends Debuggable {
         return this._lineCharacters[this._lineCharacters.length - 1];
     }
 
-    getSubCanvasContext(xPosOffset: number = 0, yPosOffset: number = 0): CanvasContext {
-        return new CanvasContext(this._canvas, this._lineNumber, this.lineWordCount, 0, this._cursorPosition + xPosOffset, yPosOffset);
+    getSubCanvasContext(xPos: number = 0, yPos: number = 0): SubCanvasContext {
+        return new SubCanvasContext(this, this.lineWordCount, xPos, yPos);
     }
 
     getPixelAt(xPos: number, yPos: number): CanvasPixel | undefined {
@@ -122,6 +122,12 @@ export class DisplaySubCanvas extends Debuggable {
 
                 if (insertPoint >= 0) {
                     this._line[i][insertPoint] = matrix[i][j];
+
+                    // Ensure the inserted entity has a subcanvas context
+                    if (!this._line[i][insertPoint].context.subCanvasContext) {
+                        this._line[i][insertPoint].context.subCanvasContext = this.getSubCanvasContext(insertPoint, i);
+                    }
+
                     this._debug(`Inserting from (${i}, ${j}) into (${i}, ${insertPoint})`);
                 }
             }
@@ -146,12 +152,12 @@ export class DisplaySubCanvas extends Debuggable {
      * @param startColumn   The column of the matrix from which to start copying data
      * @param canvasPixelContext    A context object holding all context acquired so far during processing
      */
-    appendMatrixToLeft(matrix: Matrix<CanvasPixel>, startColumn: number = 0, canvasPixelContext:CanvasPixelContext = {}) {
+    appendMatrixToLeft(matrix: Matrix<CanvasPixel>, startColumn: number = 0, canvasPixelContext: CanvasPixelContext = {}) {
         const applyCanvasContext = (canvasPixel: CanvasPixel, xPos: number, yPos: number) => {
             // Apply any context we've acquired so far
             canvasPixel.addContext(canvasPixelContext);
             // And apply the specific canvas context from this insertion
-            canvasPixel.addCanvasContext(this.getSubCanvasContext(xPos, yPos));
+            canvasPixel.addSubCanvasContext(this.getSubCanvasContext(xPos, yPos));
         };
 
         MatrixUtils.appendMatrixToLeft(this._line, matrix, applyCanvasContext, startColumn);
@@ -167,12 +173,12 @@ export class DisplaySubCanvas extends Debuggable {
      * @param startColumn           The column of the matrix from which to start copying data
      * @param canvasPixelContext    A context object holding all context acquired so far during processing
      */
-    appendMatrixToRight(matrix: Matrix<CanvasPixel>, startColumn: number = 0, canvasPixelContext:CanvasPixelContext = {}) {
+    appendMatrixToRight(matrix: Matrix<CanvasPixel>, startColumn: number = 0, canvasPixelContext: CanvasPixelContext = {}) {
         const applyCanvasContext = (canvasPixel: CanvasPixel, xPos: number, yPos: number) => {
             // Apply any context we've acquired so far
             canvasPixel.addContext(canvasPixelContext);
             // And apply the specific canvas context from this insertion
-            canvasPixel.addCanvasContext(this.getSubCanvasContext(xPos, yPos));
+            canvasPixel.addSubCanvasContext(this.getSubCanvasContext(xPos, yPos));
         };
 
         MatrixUtils.appendMatrixToRight(this._line, matrix, applyCanvasContext, startColumn);
