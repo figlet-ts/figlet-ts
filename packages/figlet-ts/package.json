@@ -58,6 +58,7 @@
         "@rollup/plugin-typescript": "^11.1.0",
         "@types/jest": "^29.5.0",
         "@types/node": "^18.15.11",
+        "@types/tinycolor2": "^1.4.3",
         "@typescript-eslint/eslint-plugin": "^5.58.0",
         "chalk": "^5.2.0",
         "commander": "^10.0.0",
@@ -74,6 +75,7 @@
         "prettier": "^2.8.7",
         "prettier-plugin-organize-imports": "^3.2.2",
         "rimraf": "^5.0.0",
+        "tinycolor2": "^1.6.0",
         "ts-jest": "^29.0.5"
     }
 }

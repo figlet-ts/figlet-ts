@@ -213,7 +213,6 @@ describe('Right-aligned full padding tests', () => {
     executeTests('padding/right-align-full-padding', figDriverOptions);
 });
 
-
 describe('Test Horizontal Layout Mode: Full Width - Left-aligned', () => {
     const figDriverOptions: FontLayoutManagerOptions = new FontLayoutManagerOptions();
     figDriverOptions.align.left();

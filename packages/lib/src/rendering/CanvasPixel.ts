@@ -1,12 +1,14 @@
 import { FIGCharacter } from '../FIGCharacter';
 import { ASCIICodes } from '../utils/ASCIICodes';
-import { CanvasContext, RasterizeContext } from './Stylizer';
+import { RasterizeContext } from './Stylizer';
+import {WordContext} from "./contexts/WordContext";
+import {CanvasContext} from "./contexts/ICanvasContext";
 
 export interface CanvasPixelContext {
     figCharacter?: FIGCharacter;
     canvasContext?: CanvasContext;
     rasterizeContext?: RasterizeContext;
-
+    wordContext?: WordContext;
     // inputToken?: InputToken;
     //
     // lineNumber?: number;

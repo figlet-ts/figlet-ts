@@ -14,6 +14,7 @@ import { CanvasPixel } from './rendering/CanvasPixel';
 import { DisplayCanvas } from './rendering/DisplayCanvas';
 import { ASCIICodes } from './utils/ASCIICodes';
 import { InputTokenParser } from './utils/InputTokenParser';
+import {FontLayoutManagerOptionsExtensionStylizer} from "./FontLayoutManagerOptionsExtensionStylizer";
 
 export class FontLayoutManager {
     private _options: FontLayoutManagerOptions;
@@ -24,6 +25,7 @@ export class FontLayoutManager {
     public readonly horizontalSmushingRules: FontLayoutManagerOptionsExtensionHorizontalSmushingRules;
     public readonly padding: FontLayoutManagerOptionsExtensionPadding;
     public readonly printDirection: FontLayoutManagerOptionsExtensionPrintDirection;
+    public readonly stylization: FontLayoutManagerOptionsExtensionStylizer;
     public readonly verticalLayout: FontLayoutManagerOptionsExtensionVerticalLayout;
     public readonly verticalSmushingRules: FontLayoutManagerOptionsExtensionVerticalSmushingRules;
     public readonly width: FontLayoutManagerOptionsExtensionWidth;
@@ -38,6 +40,7 @@ export class FontLayoutManager {
         this.horizontalSmushingRules = new FontLayoutManagerOptionsExtensionHorizontalSmushingRules(this.options);
         this.padding = new FontLayoutManagerOptionsExtensionPadding(this.options);
         this.printDirection = new FontLayoutManagerOptionsExtensionPrintDirection(this.options);
+        this.stylization = new FontLayoutManagerOptionsExtensionStylizer(this.options);
         this.verticalLayout = new FontLayoutManagerOptionsExtensionVerticalLayout(this.options);
         this.verticalSmushingRules = new FontLayoutManagerOptionsExtensionVerticalSmushingRules(this.options);
         this.width = new FontLayoutManagerOptionsExtensionWidth(this.options);

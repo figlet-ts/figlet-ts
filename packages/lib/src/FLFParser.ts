@@ -2,7 +2,7 @@ import { FIGCharacter } from './FIGCharacter';
 import { FIGFont } from './FIGFont';
 import { Debugger } from './utils/DebugUtil';
 
-const debug = Debugger.getNamespacedDebugger('FLFParser');
+const debug = Debugger.getInternalNamespacedDebugger('FLFParser');
 
 export class FLFParseError extends Error {
     constructor(message: string) {

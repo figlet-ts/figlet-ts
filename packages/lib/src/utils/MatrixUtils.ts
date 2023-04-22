@@ -35,9 +35,9 @@ export class MatrixUtils {
         for (let i = 0; i < glyph.length; i++) {
             for (let j = endColumn; j >= startColumn; j--) {
                 if (decorator !== null) {
-                    decorator(glyph[i][j-startColumn], j, i);
+                    decorator(glyph[i][j - startColumn], j, i);
                 }
-                lineBuffer[i].unshift(glyph[i][j-startColumn]);
+                lineBuffer[i].unshift(glyph[i][j - startColumn]);
             }
         }
     }

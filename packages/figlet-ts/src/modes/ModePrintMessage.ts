@@ -1,5 +1,6 @@
 import { FIGFont, FontLayoutManager } from '@figlet-ts/lib';
 import { Command, Option } from 'commander';
+import { Rainbow } from '../stylizers/Rainbow';
 import { IOUtils } from '../utils/IOUtils';
 import { ProgramMode } from '../utils/ProgramMode';
 import { ProgramModeOptions } from '../utils/ProgramModeOptions';
@@ -139,6 +140,9 @@ export class ModePrintMessage extends ProgramMode {
                 flm.characterReplacement.setWhitespaceCharacter(this.options.whitespaceCharacter);
             }
 
+            const rainbow: Rainbow = new Rainbow();
+            flm.stylization.set(rainbow);
+
             IOUtils.stdout(flm.renderText(message, this._font), { newlineCount: 1 });
         }
     }
@@ -167,13 +171,18 @@ export class ModePrintMessage extends ProgramMode {
         if (this.options.remainingArguments !== undefined && this.options.remainingArguments.length !== 0) {
             this.renderMessage(this.options.remainingArguments.join(' '));
         } else {
-            IOUtils.stdout('Reading from stdin.  Type something and hit return.  Use \\n for newlines.  Press Ctrl-C to quit.', { newlineCount: 2 });
-            IOUtils.stdout('figlet> ', { newlineCount: 0 });
-
-            IOUtils.bindStdin((data) => {
+            const isTty = IOUtils.bindStdin((data) => {
                 this.renderMessage(data.toString().trimEnd());
-                IOUtils.stdout('figlet> ', { newlineCount: 0 });
             });
+
+            if (isTty) {
+                IOUtils.stdout('Reading from stdin.  Type something and hit return.  Use \\n for newlines.  Press Ctrl-C to quit.', { newlineCount: 2 });
+                IOUtils.stdout('figlet-ts> ', { newlineCount: 0 });
+                // Bind a pseudo-prompt
+                IOUtils.bindStdin(() => {
+                    IOUtils.stdout('figlet-ts> ', { newlineCount: 0 });
+                });
+            }
         }
     }
 }

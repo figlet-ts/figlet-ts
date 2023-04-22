@@ -9,9 +9,11 @@ import { Debuggable } from '../utils/DebugUtil';
 import { InputToken } from '../utils/InputToken';
 import { Matrix, MatrixUtils, MultilineMatrix } from '../utils/MatrixUtils';
 import { StringWidthProxy } from '../utils/StringWidthProxy';
-import { CanvasPixel } from './CanvasPixel';
+import { CanvasPixel, CanvasPixelContext } from './CanvasPixel';
+import { WordContext } from './contexts/WordContext';
 import { DisplaySubCanvas } from './DisplaySubCanvas';
-import { Stylizer } from './Stylizer';
+import { RasterizeContext } from './Stylizer';
+import {CanvasContext} from "./contexts/ICanvasContext";
 
 export class DisplayCanvas extends Debuggable {
     private readonly _lineHeight: number = 0;
@@ -69,10 +71,16 @@ export class DisplayCanvas extends Debuggable {
         this.currentLine.incrementWordCount();
     }
 
-    public addFIGCharacter(figCharacter: FIGCharacter): boolean {
+    // getCanvasContext(xPosOffset: number = 0, yPosOffset: number = 0): CanvasContext {
+    //     // return new CanvasContext(this._canvas, this._lineNumber, this.lineWordCount, 0, this._cursorPosition + xPosOffset, yPosOffset);
+    // }
+
+    public addFIGCharacter(figCharacter: FIGCharacter, canvasPixelContext: CanvasPixelContext = {}): boolean {
+        this._debug(`Adding ${figCharacter.character} with wordContext character position ${canvasPixelContext.wordContext?.characterPos}`);
         // const sr = this._flm.doSmush(this.getLastFIGCharacter(), figCharacter);
         // this.appendSmushResult(sr);
-        this.addFCToCurrentLine(figCharacter);
+        canvasPixelContext.canvasContext = this.currentLine.getSubCanvasContext()
+        this.addFCToCurrentLine(figCharacter, canvasPixelContext);
 
         // Check if we've exceeded the selected rendering width
         if (this.getCurrentLineLength() > this._flm.width.get()) {
@@ -89,7 +97,7 @@ export class DisplayCanvas extends Debuggable {
                 // Otherwise, the inputToken is longer than the rendering width, so we just need to start a newline and continue with the same inputToken
                 this.restorePreviousCurrentLineState(this.STATE_NAME_CHARACTER);
                 this.addLine();
-                return this.addFIGCharacter(figCharacter);
+                return this.addFIGCharacter(figCharacter, canvasPixelContext);
             }
         }
 
@@ -340,6 +348,13 @@ export class DisplayCanvas extends Debuggable {
             }
         }
 
+        // Add a rasterizationContext to each pixel
+        for (let i = 0; i < vSmushBuffer.length; i++) {
+            for (let j = 0; j < vSmushBuffer[i].length; j++) {
+                vSmushBuffer[i][j].addRasterizeContext(new RasterizeContext(vSmushBuffer, j, i));
+            }
+        }
+
         // Convert to output string
         return this.convertMatrixToDisplayString(vSmushBuffer);
     }
@@ -357,15 +372,25 @@ export class DisplayCanvas extends Debuggable {
         }
     }
 
-    private convertMatrixToStringInContextMode(matrix: Matrix<CanvasPixel>, stylizer: Stylizer | null = null): string {
+    private convertMatrixToStringInContextMode(matrix: Matrix<CanvasPixel>): string {
         const retVal: string[] = [];
+
+        const stylizers = this._flm.options.getStylizers();
+        // Initialise the stylizers
+        for (const stylizer of stylizers) {
+            stylizer.libInternalInit(this._flm.options);
+        }
 
         for (const currentLineArray of matrix) {
             const currentLine: string[] = [];
 
             for (const pixel of currentLineArray) {
-                if (stylizer) {
-                    currentLine.push(stylizer.applyStyle(pixel));
+                if (stylizers.length > 0) {
+                    let outputChar = this.getMappedCharacter(pixel.character);
+                    for (let i = 0; i < stylizers.length; i++) {
+                        outputChar = stylizers[i].libInternalApplyStyle(outputChar, pixel.context);
+                    }
+                    currentLine.push(outputChar);
                 } else {
                     currentLine.push(this.getMappedCharacter(pixel.character));
                 }
@@ -411,12 +436,6 @@ export class DisplayCanvas extends Debuggable {
                 // Now we construct the block we need to insert
                 const toInsert: string[] = [];
 
-                if (outputCharWidth === 0) {
-                    console.log(currentLineArray);
-                    console.log(outputChar);
-                    console.log(tuple);
-                    console.log(outputCharWidth);
-                }
                 // Push as many copies of the grapheme as we need
                 toInsert.push(...new Array(Math.floor(tuple[1] / outputCharWidth)).fill(outputChar));
 
@@ -487,7 +506,7 @@ export class DisplayCanvas extends Debuggable {
         return retVal;
     }
 
-    public addFCToCurrentLine(figCharacter: FIGCharacter) {
+    public addFCToCurrentLine(figCharacter: FIGCharacter, canvasPixelContext: CanvasPixelContext = {}) {
         // This method does not care about line length, etc.  It will always suceed in adding a FIGCharacter to the end of a line:
 
         // If the line is empty, or if we're not kerning or smushing, just add the character
@@ -495,9 +514,9 @@ export class DisplayCanvas extends Debuggable {
         if (!(this._flm.options.doHorizontalKerning() || this._flm.options.doHorizontalSmushing())) {
             this._debug(`Horizontal kern/smush disabled - appending "${figCharacter.character}" on to the current line at full width`);
             if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
-                this.currentLine.appendMatrixToRight(this.getGlyphMatrixFromFIGCharacter(figCharacter));
+                this.currentLine.appendMatrixToRight(this.getGlyphMatrixFromFIGCharacter(figCharacter), 0, canvasPixelContext);
             } else {
-                this.currentLine.appendMatrixToLeft(this.getGlyphMatrixFromFIGCharacter(figCharacter));
+                this.currentLine.appendMatrixToLeft(this.getGlyphMatrixFromFIGCharacter(figCharacter), 0, canvasPixelContext);
             }
 
             // And add the FIGCharacter to the log of added chars
@@ -567,7 +586,7 @@ export class DisplayCanvas extends Debuggable {
             // Loop over each row
             for (let i = 0; i < this._lineHeight; i++) {
                 overlapBuffer[i] = [];
-                for (let j = 0; j < kernDistance && canSmush; j++) {
+                for (let j= 0; j < kernDistance && canSmush; j++) {
                     const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? this.currentLine.lineLength - kernDistance + j : j;
                     const newGlyphBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? j : glyphToAdd[i].length - kernDistance + j;
 
@@ -577,12 +596,20 @@ export class DisplayCanvas extends Debuggable {
                     // console.debug(existingBuffer[i][existingBuffer[i].length - kernDistance + j])
 
                     const newGlyphChar = glyphToAdd[i][newGlyphBufferIndex] ?? CanvasPixel.getWhitespacePixel();
+                    newGlyphChar.addContext(canvasPixelContext);
+                    
                     const smushResult = this._flm.getHorizontalSmushCharacter(existingChar, newGlyphChar, this._font.hardblankCharacter);
 
                     // console.debug(`LEFT: ${String.fromCharCode(existingChar)}(from idx: ${existingBufferIndex})    RIGHT: ${String.fromCharCode(newGlyphChar)}(from idx: ${newGlyphBufferIndex})  RESULT: ${String.fromCharCode(smushResult)}`)
 
                     // If we can smush
                     if (smushResult !== null) {
+                        console.log(`Smushing - got canvasContext? ${canvasPixelContext.canvasContext!==undefined}`);
+                        // Ensure the smush result has the canvas context applied to it, if it doesn't already have one
+                        if (canvasPixelContext.canvasContext && !smushResult.context.canvasContext) {
+                            smushResult.addCanvasContext(canvasPixelContext.canvasContext);
+                        }
+                        
                         if (this.currentLine.lineLength - kernDistance + j >= 0) {
                             if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
                                 overlapBuffer[i].push(smushResult);
@@ -606,27 +633,26 @@ export class DisplayCanvas extends Debuggable {
                 
                 // Overwrite the end of the current line with the overlap buffer
                 this.currentLine.replaceRight(overlapBuffer);
-
+                
                 // Add the rest of the glyph characters
-                this.currentLine.appendMatrixToRight(glyphToAdd, kernDistance);
-
+                this.currentLine.appendMatrixToRight(glyphToAdd, kernDistance, canvasPixelContext);
+                
             } else if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.RIGHT_TO_LEFT) {
 
                 // Overwrite the end of the current line with the overlap buffer
                 this.currentLine.replaceLeft(overlapBuffer);
 
                 // Add the rest of the glyph characters
-                this.currentLine.appendMatrixToLeft(glyphToAdd, kernDistance);
+                this.currentLine.appendMatrixToLeft(glyphToAdd, kernDistance, canvasPixelContext);
             }
-
         } else {
             this._debug(`Cannot kern/smush "${figCharacter.character}" on to the current line.  Appending at full width.`);
 
             // Otherwise, it's not smush/kernable at all
             if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
-                this.currentLine.appendMatrixToRight(this.getGlyphMatrixFromFIGCharacter(figCharacter));
+                this.currentLine.appendMatrixToRight(this.getGlyphMatrixFromFIGCharacter(figCharacter), 0, canvasPixelContext);
             } else {
-                this.currentLine.appendMatrixToLeft(this.getGlyphMatrixFromFIGCharacter(figCharacter));
+                this.currentLine.appendMatrixToLeft(this.getGlyphMatrixFromFIGCharacter(figCharacter), 0, canvasPixelContext);
             }
         }
 
@@ -642,7 +668,8 @@ export class DisplayCanvas extends Debuggable {
         } else {
             for (let i = 0; i < word.length; i++) {
                 const character = word[i];
-                if (!this.addFIGCharacter(this._font.getFIGCharacter(character))) {
+                const wordContext: WordContext = new WordContext(inputToken, i);
+                if (!this.addFIGCharacter(this._font.getFIGCharacter(character), { wordContext: wordContext })) {
                     // If we've added more than one inputToken, then roll back to previous state and add a new line and start adding the inputToken again
                     this.restorePreviousCurrentLineState(this.STATE_NAME_WORD);
                     this.addLine();

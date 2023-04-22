@@ -13,8 +13,10 @@ import { FontLayoutManagerOptionsExtensionVerticalSmushingRules } from './FontLa
 import { FontLayoutManagerOptionsExtensionWidth } from './FontLayoutManagerOptionsExtensionWidth';
 import { DefaultLayoutRules } from './layoutRules/DefaultLayoutRules';
 import { LayoutRulesBase } from './layoutRules/LayoutRulesBase';
+import { Stylizer } from './rendering/Stylizer';
 import { ASCIICodes } from './utils/ASCIICodes';
 import { CharacterReplacementMap } from './utils/CharacterReplacementMap';
+import {FontLayoutManagerOptionsExtensionStylizer} from "./FontLayoutManagerOptionsExtensionStylizer";
 
 export class FontLayoutManagerOptions extends LayoutRulesBase {
     _overrideHorizontalEqualCharacterSmushing: boolean | undefined;
@@ -44,6 +46,8 @@ export class FontLayoutManagerOptions extends LayoutRulesBase {
     _renderingHorizontalSmushPlusModeEnabled: boolean = false;
     _renderingVerticalKernMaxOffset: number = 1;
 
+    _renderingStylizers: Stylizer[] = [];
+
     readonly _bodyTextCharacterMap: CharacterReplacementMap = new CharacterReplacementMap(
         new Map<number, string>([
             [0, ' '],
@@ -66,6 +70,7 @@ export class FontLayoutManagerOptions extends LayoutRulesBase {
     public readonly horizontalSmushing: FontLayoutManagerOptionsExtensionHorizontalSmushingRules;
     public readonly padding: FontLayoutManagerOptionsExtensionPadding;
     public readonly printDirection: FontLayoutManagerOptionsExtensionPrintDirection;
+    public readonly stylization: FontLayoutManagerOptionsExtensionStylizer;
     public readonly verticalLayout: FontLayoutManagerOptionsExtensionVerticalLayout;
     public readonly verticalSmushing: FontLayoutManagerOptionsExtensionVerticalSmushingRules;
     public readonly width: FontLayoutManagerOptionsExtensionWidth;
@@ -82,6 +87,7 @@ export class FontLayoutManagerOptions extends LayoutRulesBase {
         this.verticalSmushing = new FontLayoutManagerOptionsExtensionVerticalSmushingRules(this);
         this.padding = new FontLayoutManagerOptionsExtensionPadding(this);
         this.printDirection = new FontLayoutManagerOptionsExtensionPrintDirection(this);
+        this.stylization = new FontLayoutManagerOptionsExtensionStylizer(this);
         this.width = new FontLayoutManagerOptionsExtensionWidth(this);
     }
 
@@ -184,6 +190,10 @@ export class FontLayoutManagerOptions extends LayoutRulesBase {
 
     getPreserveAspectRatio(): boolean {
         return this._renderingPreserveAspectRatio;
+    }
+
+    getStylizers(): Stylizer[] {
+        return this._renderingStylizers;
     }
 
     doHorizontalSmushPlus(): boolean {

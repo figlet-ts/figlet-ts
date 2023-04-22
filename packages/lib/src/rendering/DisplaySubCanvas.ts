@@ -1,9 +1,10 @@
 import { FIGCharacter } from '../FIGCharacter';
 import { Debuggable } from '../utils/DebugUtil';
 import { Matrix, MatrixUtils } from '../utils/MatrixUtils';
-import { CanvasPixel } from './CanvasPixel';
+import {CanvasPixel, CanvasPixelContext} from './CanvasPixel';
 import { DisplayCanvas } from './DisplayCanvas';
-import { CanvasContext } from './Stylizer';
+
+import {CanvasContext} from "./contexts/ICanvasContext";
 
 export class DisplaySubCanvas extends Debuggable {
     private readonly _canvas: DisplayCanvas;
@@ -80,7 +81,7 @@ export class DisplaySubCanvas extends Debuggable {
         return this._lineCharacters[this._lineCharacters.length - 1];
     }
 
-    getCanvasContext(xPosOffset: number = 0, yPosOffset: number = 0): CanvasContext {
+    getSubCanvasContext(xPosOffset: number = 0, yPosOffset: number = 0): CanvasContext {
         return new CanvasContext(this._canvas, this._lineNumber, this.lineWordCount, 0, this._cursorPosition + xPosOffset, yPosOffset);
     }
 
@@ -100,12 +101,7 @@ export class DisplaySubCanvas extends Debuggable {
     replaceLeft(matrix: Matrix<CanvasPixel>) {
         for (let i = 0; i < matrix.length; i++) {
             for (let j = 0; j < matrix[i].length; j++) {
-                const contextFromExistingPixel = this._line[i][j].context;
                 const reversedMatrixLine = matrix[i].slice(0).reverse();
-                if (contextFromExistingPixel.canvasContext) {
-                    // this._debug(`Original Canvas Context ${contextFromExistingPixel.canvasContext.lineWordNumber}`);
-                    matrix[i][j].addCanvasContext(contextFromExistingPixel.canvasContext);
-                }
                 this._line[i][j] = reversedMatrixLine[j];
                 this._debug(`Inserting from (${i}, ${j}) into (${i}, ${j})`);
             }
@@ -123,12 +119,8 @@ export class DisplaySubCanvas extends Debuggable {
             const existingLineLength = this._line[i].length;
             for (let j = 0; j < matrix[i].length; j++) {
                 const insertPoint = existingLineLength - (matrix[i].length - j);
+
                 if (insertPoint >= 0) {
-                    const contextFromExistingPixel = this._line[i][insertPoint].context;
-                    if (contextFromExistingPixel.canvasContext) {
-                        // this._debug(`Original Canvas Context ${contextFromExistingPixel.canvasContext.lineWordNumber}`);
-                        matrix[i][j].addCanvasContext(contextFromExistingPixel.canvasContext);
-                    }
                     this._line[i][insertPoint] = matrix[i][j];
                     this._debug(`Inserting from (${i}, ${j}) into (${i}, ${insertPoint})`);
                 }
@@ -149,13 +141,17 @@ export class DisplaySubCanvas extends Debuggable {
 
     /**
      * Appends a matrix of CanvasPixels to the left-hand end of the Display Canvas
-     * 
+     *
      * @param matrix        The matrix to append to the end of the DisplayCanvas
-     * @param startColumn   The column of the matrix from which to start copying data 
+     * @param startColumn   The column of the matrix from which to start copying data
+     * @param canvasPixelContext    A context object holding all context acquired so far during processing
      */
-    appendMatrixToLeft(matrix: Matrix<CanvasPixel>, startColumn: number = 0) {
+    appendMatrixToLeft(matrix: Matrix<CanvasPixel>, startColumn: number = 0, canvasPixelContext:CanvasPixelContext = {}) {
         const applyCanvasContext = (canvasPixel: CanvasPixel, xPos: number, yPos: number) => {
-            canvasPixel.addCanvasContext(this.getCanvasContext(xPos, yPos));
+            // Apply any context we've acquired so far
+            canvasPixel.addContext(canvasPixelContext);
+            // And apply the specific canvas context from this insertion
+            canvasPixel.addCanvasContext(this.getSubCanvasContext(xPos, yPos));
         };
 
         MatrixUtils.appendMatrixToLeft(this._line, matrix, applyCanvasContext, startColumn);
@@ -166,13 +162,17 @@ export class DisplaySubCanvas extends Debuggable {
 
     /**
      * Appends a matrix of CanvasPixels to the right-hand end of the Display Canvas
-     * 
-     * @param matrix        The matrix to append to the end of the DisplayCanvas
-     * @param startColumn   The column of the matrix from which to start copying data 
+     *
+     * @param matrix                The matrix to append to the end of the DisplayCanvas
+     * @param startColumn           The column of the matrix from which to start copying data
+     * @param canvasPixelContext    A context object holding all context acquired so far during processing
      */
-    appendMatrixToRight(matrix: Matrix<CanvasPixel>, startColumn: number = 0) {
+    appendMatrixToRight(matrix: Matrix<CanvasPixel>, startColumn: number = 0, canvasPixelContext:CanvasPixelContext = {}) {
         const applyCanvasContext = (canvasPixel: CanvasPixel, xPos: number, yPos: number) => {
-            canvasPixel.addCanvasContext(this.getCanvasContext(xPos, yPos));
+            // Apply any context we've acquired so far
+            canvasPixel.addContext(canvasPixelContext);
+            // And apply the specific canvas context from this insertion
+            canvasPixel.addCanvasContext(this.getSubCanvasContext(xPos, yPos));
         };
 
         MatrixUtils.appendMatrixToRight(this._line, matrix, applyCanvasContext, startColumn);
