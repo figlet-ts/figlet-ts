@@ -1,58 +1,19 @@
 import { LayoutRulesBase } from '../layoutRules/LayoutRulesBase';
 import { ExternalDebuggable } from '../utils/DebugUtil';
-import { Matrix } from '../utils/MatrixUtils';
-import { CanvasPixel, CanvasPixelContext } from './CanvasPixel';
-
-export interface IRasterizeContext {
-    width: number;
-    height: number;
-    lineNumber: number;
-
-    xPos: number;
-    yPos: number;
-}
-
-export class RasterizeContext implements IRasterizeContext {
-    private _matrix: Matrix<CanvasPixel>;
-    private _currentLineNumber: number = 0;
-
-    xPos: number = 0;
-    yPos: number = 0;
-
-    constructor(matrix: Matrix<CanvasPixel>, xPos: number, yPos: number) {
-        this._matrix = matrix;
-        this.updateCursorPosition(xPos, yPos);
-    }
-
-    private updateCursorPosition(xPos: number, yPos: number) {
-        this.xPos = xPos;
-        this.yPos = yPos;
-    }
-
-    get width(): number {
-        return this._matrix[0].length;
-    }
-
-    get height(): number {
-        return this._matrix.length;
-    }
-
-    get lineNumber(): number {
-        return this._currentLineNumber;
-    }
-}
+import { CanvasPixelContext } from './CanvasPixel';
+import { CanvasContext } from './contexts/CanvasContext';
 
 export abstract class Stylizer extends ExternalDebuggable {
-    private _layoutRules: LayoutRulesBase | undefined;
+    protected _layoutRules: LayoutRulesBase | undefined;
 
     protected constructor(stylizerName: string) {
         super(stylizerName);
     }
 
-    public libInternalInit(layoutRulesBase: LayoutRulesBase) {
+    public libInternalInit(layoutRulesBase: LayoutRulesBase, canvasContext: CanvasContext) {
         this._layoutRules = layoutRulesBase;
         this._debug('Initialising Stylizer');
-        this.init();
+        this.init(canvasContext);
     }
 
     public libInternalApplyStyle(character: string, pixelContext: CanvasPixelContext): string {
@@ -67,7 +28,7 @@ export abstract class Stylizer extends ExternalDebuggable {
         return this._layoutRules;
     }
 
-    abstract init(): void;
+    abstract init(canvasContext: CanvasContext): void;
 
     abstract applyStyle(character: string, pixelContext: CanvasPixelContext): string;
 }

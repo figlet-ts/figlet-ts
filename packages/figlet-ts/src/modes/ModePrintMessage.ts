@@ -1,6 +1,6 @@
 import { FIGFont, FontLayoutManager } from '@figlet-ts/lib';
 import { Command, Option } from 'commander';
-import { Rainbow } from '../stylizers/Rainbow';
+import { CyclicRasterisationStyle } from '../stylizers/CyclicRasterisationStyle';
 import { IOUtils } from '../utils/IOUtils';
 import { ProgramMode } from '../utils/ProgramMode';
 import { ProgramModeOptions } from '../utils/ProgramModeOptions';
@@ -140,8 +140,14 @@ export class ModePrintMessage extends ProgramMode {
                 flm.characterReplacement.setWhitespaceCharacter(this.options.whitespaceCharacter);
             }
 
-            const rainbow: Rainbow = new Rainbow();
-            flm.stylization.set(rainbow);
+            flm.stylization.set(
+                new CyclicRasterisationStyle('Rainbow', {
+                    colourMode: 'foreground',
+                    paletteWidth: 'longestLine',
+                    bgColour: '#000',
+                    startColour: '#f00'
+                })
+            );
 
             IOUtils.stdout(flm.renderText(message, this._font), { newlineCount: 1 });
         }

@@ -8,16 +8,16 @@ import { SubCanvasContext } from './contexts/SubCanvasContext';
 
 export class DisplaySubCanvas extends Debuggable {
     private readonly _canvas: DisplayCanvas;
-    private readonly _lineNumber;
-    private readonly _lineHeight: number = 0;
-    private readonly _lineLength: number = 0;
+    private readonly _subCanvasNumber;
+    private readonly _height: number = 0;
+    private readonly _length: number = 0;
     private readonly _line: Matrix<CanvasPixel> = [];
-    private readonly _lineCharacters: FIGCharacter[] = [];
-    private _lineWordCount = 0;
+    private readonly _characters: FIGCharacter[] = [];
+    private _wordCount = 0;
     private _cursorPosition = 0;
 
     static copy(previousState: DisplaySubCanvas): DisplaySubCanvas {
-        const retVal: DisplaySubCanvas = new DisplaySubCanvas(previousState._canvas, previousState._lineNumber, previousState._lineHeight, previousState._lineLength);
+        const retVal: DisplaySubCanvas = new DisplaySubCanvas(previousState._canvas, previousState._subCanvasNumber, previousState._height, previousState._length);
 
         // Copy the line state
         for (let i = 0; i < previousState._line.length; i++) {
@@ -25,10 +25,10 @@ export class DisplaySubCanvas extends Debuggable {
         }
 
         // Copy the line characters state
-        retVal._lineCharacters.push(...previousState._lineCharacters);
+        retVal._characters.push(...previousState._characters);
 
         // Copy the word count
-        retVal._lineWordCount = previousState._lineWordCount;
+        retVal._wordCount = previousState._wordCount;
 
         //  Copy the cursor postion
         retVal._cursorPosition = previousState._cursorPosition;
@@ -39,12 +39,12 @@ export class DisplaySubCanvas extends Debuggable {
     constructor(canvas: DisplayCanvas, lineNumber: number, lineHeight: number, lineLength: number) {
         super('DisplaySubCanvas');
         this._canvas = canvas;
-        this._lineNumber = lineNumber;
-        this._lineHeight = lineHeight;
-        this._lineLength = lineLength;
+        this._subCanvasNumber = lineNumber;
+        this._height = lineHeight;
+        this._length = lineLength;
 
         // Otherwise, initialise the lines to the provided height
-        for (let i = 0; i < this._lineHeight; i++) {
+        for (let i = 0; i < this._height; i++) {
             this._line[i] = [];
         }
     }
@@ -53,36 +53,36 @@ export class DisplaySubCanvas extends Debuggable {
         return this._line;
     }
 
-    get lineCharacters(): FIGCharacter[] {
-        return this._lineCharacters;
+    get characters(): FIGCharacter[] {
+        return this._characters;
     }
 
-    get lineWordCount(): number {
-        return this._lineWordCount;
+    get wordCount(): number {
+        return this._wordCount;
     }
 
-    get lineHeight(): number {
-        return this._lineHeight;
+    get height(): number {
+        return this._height;
     }
 
-    get lineLength(): number {
+    get length(): number {
         return this._line[0].length;
     }
 
     incrementWordCount(): void {
-        this._lineWordCount++;
+        this._wordCount++;
     }
 
     addFIGCharacter(figCharacter: FIGCharacter): void {
-        this._lineCharacters.push(figCharacter);
+        this._characters.push(figCharacter);
     }
 
     getLastFIGCharacter(): FIGCharacter | null {
-        return this._lineCharacters[this._lineCharacters.length - 1];
+        return this._characters[this._characters.length - 1];
     }
 
     getSubCanvasContext(xPos: number = 0, yPos: number = 0): SubCanvasContext {
-        return new SubCanvasContext(this, this.lineWordCount, xPos, yPos);
+        return new SubCanvasContext(this, this._subCanvasNumber, this.wordCount, xPos, yPos);
     }
 
     getPixelAt(xPos: number, yPos: number): CanvasPixel | undefined {
@@ -139,7 +139,7 @@ export class DisplaySubCanvas extends Debuggable {
      * @param numCols
      */
     truncateRight(numCols: number) {
-        for (let i = 0; i < this.lineHeight; i++) {
+        for (let i = 0; i < this.height; i++) {
             this._line[i].splice(this._line[i].length - numCols, numCols);
         }
         this._cursorPosition -= numCols;

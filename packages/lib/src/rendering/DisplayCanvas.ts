@@ -10,10 +10,10 @@ import { InputToken } from '../utils/InputToken';
 import { Matrix, MatrixUtils, MultilineMatrix } from '../utils/MatrixUtils';
 import { StringWidthProxy } from '../utils/StringWidthProxy';
 import { CanvasPixel, CanvasPixelContext } from './CanvasPixel';
+import { CanvasContext } from './contexts/CanvasContext';
+import { RasterisationContext } from './contexts/RasterisationContext';
 import { WordContext } from './contexts/WordContext';
 import { DisplaySubCanvas } from './DisplaySubCanvas';
-import { RasterizeContext } from './Stylizer';
-import {CanvasContext} from "./contexts/ICanvasContext";
 
 export class DisplayCanvas extends Debuggable {
     private readonly _lineHeight: number = 0;
@@ -72,7 +72,7 @@ export class DisplayCanvas extends Debuggable {
     }
 
     getCanvasContext(): CanvasContext {
-        return new CanvasContext(this, this._currentLine);
+        return new CanvasContext(this);
     }
 
     public addFIGCharacter(figCharacter: FIGCharacter, canvasPixelContext: CanvasPixelContext = {}): boolean {
@@ -84,7 +84,7 @@ export class DisplayCanvas extends Debuggable {
 
         // Check if we've exceeded the selected rendering width
         if (this.getCurrentLineLength() > this._flm.width.get()) {
-            if (this.currentLine.lineCharacters.length === 1) {
+            if (this.currentLine.characters.length === 1) {
                 // If this is the first character we've added to this line, then the display width is set lower than this character's width.
                 // We just need to add this character, and overrun the requested display width
                 this.saveCurrentLineState(this.STATE_NAME_CHARACTER);
@@ -116,18 +116,18 @@ export class DisplayCanvas extends Debuggable {
 
     public getTotalWordCount(): number {
         let retVal = 0;
-        this._lines.forEach((l) => (retVal += l.lineWordCount));
+        this._lines.forEach((l) => (retVal += l.wordCount));
         return retVal;
     }
 
     public getTotalCharacterCount(): number {
         let retVal = 0;
-        this._lines.forEach((l) => (retVal += l.lineCharacters.length));
+        this._lines.forEach((l) => (retVal += l.characters.length));
         return retVal;
     }
 
     public getCurrentLineWordCount(): number {
-        return this.currentLine.lineWordCount;
+        return this.currentLine.wordCount;
     }
 
     public getCurrentLineLength() {
@@ -136,12 +136,12 @@ export class DisplayCanvas extends Debuggable {
 
     public getLineHeight(lineNumber: number): number {
         // console.log(this._lines[lineNumber]);
-        return this._lines[lineNumber].lineHeight;
+        return this._lines[lineNumber].height;
     }
 
     public getLineLength(lineNumber: number): number {
         // console.log(this._lines[lineNumber]);
-        return this._lines[lineNumber].lineLength;
+        return this._lines[lineNumber].length;
     }
 
     private getMappedCharacter(char: number): string {
@@ -351,7 +351,7 @@ export class DisplayCanvas extends Debuggable {
         // Add a rasterizationContext to each pixel
         for (let i = 0; i < vSmushBuffer.length; i++) {
             for (let j = 0; j < vSmushBuffer[i].length; j++) {
-                vSmushBuffer[i][j].addRasterizeContext(new RasterizeContext(vSmushBuffer, j, i));
+                vSmushBuffer[i][j].addRasterizeContext(new RasterisationContext(vSmushBuffer, j, i));
             }
         }
 
@@ -378,7 +378,7 @@ export class DisplayCanvas extends Debuggable {
         const stylizers = this._flm.options.getStylizers();
         // Initialise the stylizers
         for (const stylizer of stylizers) {
-            stylizer.libInternalInit(this._flm.options);
+            stylizer.libInternalInit(this._flm.options, new CanvasContext(this));
         }
 
         for (const currentLineArray of matrix) {
@@ -456,7 +456,9 @@ export class DisplayCanvas extends Debuggable {
                     // Any other marker, we place the padding based on the rendering alignment
                     switch (this._flm.options.getRenderingAlignment()) {
                         case FontLayoutHorizontalAlignment.LEFT_ALIGN:
-                            toInsert.push(...new Array(singleCharacterPaddingAmount).fill(this._flm.characterReplacement.getPaddingCharacterMap().get(CharacterCodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE)));
+                            toInsert.push(
+                                ...new Array(singleCharacterPaddingAmount).fill(this._flm.characterReplacement.getPaddingCharacterMap().get(CharacterCodes.FIGLET_TS_SINGLE_WIDTH_WHITESPACE))
+                            );
                             break;
                         case FontLayoutHorizontalAlignment.RIGHT_ALIGN:
                             toInsert.unshift(
@@ -510,7 +512,7 @@ export class DisplayCanvas extends Debuggable {
         // This method does not care about line length, etc.  It will always suceed in adding a FIGCharacter to the end of a line:
 
         canvasPixelContext.canvasContext = this.getCanvasContext();
-        
+
         // If the line is empty, or if we're not kerning or smushing, just add the character
         // console.debug(`Adding FC for ${figCharacter.character}`);
         if (!(this._flm.options.doHorizontalKerning() || this._flm.options.doHorizontalSmushing())) {
@@ -547,7 +549,7 @@ export class DisplayCanvas extends Debuggable {
 
             // Hunt for non-white space characters.  That will give us our kerning distance
             for (let k = 0; k < maxKernTestingDistance; k++) {
-                const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? this.currentLine.lineLength - 1 - k : k;
+                const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? this.currentLine.length - 1 - k : k;
                 const pixel = this.currentLine.getPixelAt(existingBufferIndex, j) ?? CanvasPixel.getWhitespacePixel();
                 if (!pixel.equals(CharacterCodes.ASCII_SPACE)) {
                     break;
@@ -589,7 +591,7 @@ export class DisplayCanvas extends Debuggable {
             for (let i = 0; i < this._lineHeight; i++) {
                 overlapBuffer[i] = [];
                 for (let j = 0; j < kernDistance && canSmush; j++) {
-                    const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? this.currentLine.lineLength - kernDistance + j : j;
+                    const existingBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? this.currentLine.length - kernDistance + j : j;
                     const newGlyphBufferIndex = this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT ? j : glyphToAdd[i].length - kernDistance + j;
 
                     // TODO:  Work out if we should use something other than -1... it has meaning...
@@ -611,7 +613,7 @@ export class DisplayCanvas extends Debuggable {
                             smushResult.addCanvasContext(canvasPixelContext.canvasContext);
                         }
 
-                        if (this.currentLine.lineLength - kernDistance + j >= 0) {
+                        if (this.currentLine.length - kernDistance + j >= 0) {
                             if (this._flm.options.getPrintDirection() === FIGFontPrintDirection.LEFT_TO_RIGHT) {
                                 overlapBuffer[i].push(smushResult);
                             } else {

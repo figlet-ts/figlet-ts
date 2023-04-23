@@ -8,18 +8,13 @@ export interface ICanvasContext {
     maxSubCanvasWidth: number;
     wordCount: number;
     characterCount: number;
-
-    currentSubCanvasNumber: number;
 }
 
 export class CanvasContext implements ICanvasContext {
     private readonly _canvas: DisplayCanvas;
 
-    private _currentSubCanvasNumber: number = 0;
-
-    constructor(canvas: DisplayCanvas, subCanvasNumber: number) {
+    constructor(canvas: DisplayCanvas) {
         this._canvas = canvas;
-        this._currentSubCanvasNumber = subCanvasNumber;
     }
 
     get width(): number {
@@ -37,15 +32,15 @@ export class CanvasContext implements ICanvasContext {
     get minSubCanvasWidth(): number {
         let minWidth = Infinity;
         for (let i = 0; i < this._canvas.getNumberOfLines(); i++) {
-            minWidth = Math.min(minWidth, this._canvas.getLine(i).lineLength);
+            minWidth = Math.min(minWidth, this._canvas.getLine(i).length);
         }
         return minWidth;
     }
 
     get maxSubCanvasWidth(): number {
-        let maxWidth = Infinity;
+        let maxWidth = 0;
         for (let i = 0; i < this._canvas.getNumberOfLines(); i++) {
-            maxWidth = Math.max(maxWidth, this._canvas.getLine(i).lineLength);
+            maxWidth = Math.max(maxWidth, this._canvas.getLine(i).length);
         }
         return maxWidth;
     }
@@ -56,9 +51,5 @@ export class CanvasContext implements ICanvasContext {
 
     get characterCount(): number {
         return this._canvas.getTotalCharacterCount();
-    }
-
-    get currentSubCanvasNumber(): number {
-        return this._currentSubCanvasNumber;
     }
 }

@@ -1,15 +1,16 @@
 import { FIGCharacter } from '../FIGCharacter';
 import { CharacterCodes } from '../utils/CharacterCodes';
-import { CanvasContext } from './contexts/ICanvasContext';
+import { CanvasContext } from './contexts/CanvasContext';
 import { SubCanvasContext } from './contexts/SubCanvasContext';
 import { WordContext } from './contexts/WordContext';
-import { RasterizeContext } from './Stylizer';
+
+import { RasterisationContext } from './contexts/RasterisationContext';
 
 export interface CanvasPixelContext {
     figCharacter?: FIGCharacter;
     canvasContext?: CanvasContext;
     subCanvasContext?: SubCanvasContext;
-    rasterizeContext?: RasterizeContext;
+    rasterizeContext?: RasterisationContext;
     wordContext?: WordContext;
     // inputToken?: InputToken;
     //
@@ -38,7 +39,7 @@ export class CanvasPixel {
         this.context.subCanvasContext = subCanvasContext;
     }
 
-    public addRasterizeContext(rasterizeContext: RasterizeContext) {
+    public addRasterizeContext(rasterizeContext: RasterisationContext) {
         this.context.rasterizeContext = rasterizeContext;
     }
 

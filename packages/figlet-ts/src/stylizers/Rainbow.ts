@@ -4,7 +4,6 @@ import tinycolor from 'tinycolor2';
 
 export class Rainbow extends Stylizer {
     private _palette: tinycolor.Instance[] = [];
-    private _giantGoldfish: string[] = ['#69D2E7', '#A7DBD8', '#E0E4CC', '#F38630', '#FA6900'];
     private _numColours = 100;
 
     constructor() {
@@ -12,7 +11,7 @@ export class Rainbow extends Stylizer {
     }
 
     init() {
-        // Setup a rainbow palette based on the width of the output
+        // Set up a rainbow palette based on the width of the output
         const startColour = tinycolor('#f00');
 
         const stepSize = 360 / this._numColours;
@@ -35,7 +34,7 @@ export class Rainbow extends Stylizer {
         //
         //     // return chalk.hex(this._giantGoldfish[0])(character);
         // }
-        
+
         // if (pixelContext.subCanvasContext) {
         //     return chalk.hex(this._palette[Math.floor((pixelContext.subCanvasContext.wordNumber / pixelContext.subCanvasContext.wordCount) * 100)].toHex())(character);
         // }
@@ -64,7 +63,7 @@ export class Rainbow extends Stylizer {
 
         // if (pixelContext.canvasContext !== undefined) {
         //     return chalk.hex(this._palette[Math.floor((pixelContext.canvasContext.currentSubCanvasNumber / pixelContext.canvasContext.subCanvasCount)) * this._numColours].toHex())(character);
-        // } 
+        // }
 
         return character;
     }

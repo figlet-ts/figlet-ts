@@ -1,6 +1,6 @@
 /**
  * This class is purely a convenience / helper class.
- * 
+ *
  * It's a lookup for a set of character codes (ASCII and internally-used) that are used within the figlet-ts codebase.
  */
 export class CharacterCodes {
