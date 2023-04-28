@@ -27,10 +27,10 @@ describe('Test IOUtils Static Methods', () => {
             }
         );
 
-        IOUtils.stderr('test', { showPrefix: true, newlineCount: 5 });
-        IOUtils.stderr('test2');
+        IOUtils.error('test', { newlineCount: 5 });
+        IOUtils.error('test2');
 
-        expect(stderrWriteSpy).toHaveBeenCalledTimes(5);
+        expect(stderrWriteSpy).toHaveBeenCalledTimes(4);
 
         stderrWriteSpy.mockReset();
     });
@@ -69,7 +69,7 @@ describe('Test IOUtils Static Methods', () => {
         }).toThrow();
 
         expect(processExitSpy).toHaveBeenCalledTimes(1);
-        expect(stderrWriteSpy).toHaveBeenCalledTimes(5);
+        expect(stderrWriteSpy).toHaveBeenCalledTimes(4);
 
         processExitSpy.mockReset();
         stderrWriteSpy.mockReset();

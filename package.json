@@ -17,14 +17,17 @@
         "check": "npm run lint:check && npm run prettier:check",
         "fix": "npm run lint:fix && npm run prettier:fix",
         "test": "rimraf coverage && npm run test -ws",
+        "clean": "npm run clean -ws",
         "build": "npm run build -ws",
         "build:fonts": "npm run build --workspace @figlet-ts/fonts",
         "build:lib": "npm run build --workspace @figlet-ts/lib",
-        "build:cli": "npm run build --workspace @figlet-ts/lib && npm run build --workspace @figlet-ts/cli",
+        "build:cli": "npm run build:figlet-ts",
+        "build:figlet-ts": "npm run build --workspace @figlet-ts/lib && npm run build --workspace figlet-ts",
         "publish:all": "npm run publish -ws",
         "publish:fonts": "npm publish --workspace @figlet-ts/fonts",
         "publish:lib": "npm publish --workspace @figlet-ts/lib",
-        "publish:cli": "npm run build --workspace @figlet-ts/lib && npm publish --workspace @figlet-ts/cli",
+        "publish:cli": "npm run publish:figlet-ts",
+        "publish:figlet-ts": "npm run build --workspace @figlet-ts/lib && npm publish --workspace figlet-ts",
         "prepare": "husky install"
     },
     "devDependencies": {
@@ -52,7 +55,6 @@
     "workspaces": [
         "packages/fonts",
         "packages/lib",
-        "packages/cli",
         "packages/figlet-ts"
     ]
 }

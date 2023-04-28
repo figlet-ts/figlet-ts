@@ -60,19 +60,13 @@ export class FontList {
             .reduce((c, a) => c + a, 0);
     }
 
-    private get randomCategory(): string | undefined {
-        const categoryKeys: string[] = Object.keys(this._fontCategories);
-
-        return categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
-    }
-
     public getRandomFont(): FontMetadata | undefined {
-        const category = this.randomCategory;
-        if (category === undefined) {
-            return undefined;
-        }
-        this.getFontsInCategory(category);
+        const allFonts: FontMetadata[] = [];
 
-        return this._fontCategories[category][Math.floor(Math.random() * this._fontCategories[category].length)];
+        for (const categoryName of this.categories) {
+            allFonts.push(...this.getFontsInCategory(categoryName));
+        }
+
+        return allFonts[Math.floor(Math.random() * allFonts.length)];
     }
 }

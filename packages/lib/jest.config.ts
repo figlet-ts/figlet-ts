@@ -5,7 +5,7 @@ const jestConfig: JestConfigWithTsJest = {
     testEnvironment: 'node',
     testMatch: ['**/tests/**/*.ts'],
     collectCoverageFrom: ['**/src/**/*.ts'],
-    coverageDirectory: '../../coverage/figlet-ts',
+    coverageDirectory: '../../coverage/lib',
     collectCoverage: true,
     verbose: true,
     transform: {

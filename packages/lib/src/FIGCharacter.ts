@@ -2,7 +2,7 @@ import { FIGFontPrintDirection } from './enums/FIGFontPrintDirection';
 import { GlyphType } from './enums/GlyphType';
 import { FIGFontError } from './errors/FIGFontErrors';
 import { FIGCharacterPaddingInfo } from './FIGCharacterPaddingInfo';
-import { ASCIICodes } from './utils/ASCIICodes';
+import { CharacterCodes } from './utils/CharacterCodes';
 
 export class FIGCharacter {
     private readonly _hardblankCharacter: number = 0;
@@ -123,7 +123,7 @@ export class FIGCharacter {
             // Some malformed fonts have inconsistent widths for each line.  We can fix that by padding them all to the longest
             for (let i = 0; i < this._glyph.length; i++) {
                 if (this._glyph[i].length < maxLineLength) {
-                    this._glyph[i] = Object.assign(new Array(maxLineLength).fill(ASCIICodes.SPACE), this._glyph[i]);
+                    this._glyph[i] = Object.assign(new Array(maxLineLength).fill(CharacterCodes.ASCII_SPACE), this._glyph[i]);
                 }
             }
         }

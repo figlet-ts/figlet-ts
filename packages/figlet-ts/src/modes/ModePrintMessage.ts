@@ -1,5 +1,9 @@
 import { FIGFont, FontLayoutManager } from '@figlet-ts/lib';
 import { Command, Option } from 'commander';
+import { pathToFileURL } from 'url';
+import { CyclicRasterisationStyle } from '../stylizers/CyclicRasterisationStyle';
+import { SingleColourStyle } from '../stylizers/SingleColourStyle';
+import { TwoColourStyle } from '../stylizers/TwoColourStyle';
 import { IOUtils } from '../utils/IOUtils';
 import { ProgramMode } from '../utils/ProgramMode';
 import { ProgramModeOptions } from '../utils/ProgramModeOptions';
@@ -16,6 +20,11 @@ export interface ModePrintMessageOptions extends ProgramModeOptions {
     paddingCharacter?: string;
     whitespaceCharacter?: string;
     message?: string[];
+    foregroundColour?: 'rainbow' | string;
+    foregroundEffect: 'solid' | 'cycle' | 'fadeToBlack' | 'fadeToWhite';
+    backgroundColour?: 'rainbow' | string;
+    backgroundEffect: 'solid' | 'cycle' | 'fadeToBlack' | 'fadeToWhite';
+    forceInteractiveMode: boolean;
 }
 
 export class ModePrintMessage extends ProgramMode {
@@ -29,7 +38,10 @@ export class ModePrintMessage extends ProgramMode {
         paddingMode: 'default',
         horizontalLayoutMode: 'font',
         verticalLayoutMode: 'font',
-        verticalKernMaxOffset: 0
+        verticalKernMaxOffset: 0,
+        foregroundEffect: 'solid',
+        backgroundEffect: 'fadeToBlack',
+        forceInteractiveMode: false
     };
 
     buildCommand(): Command {
@@ -50,6 +62,15 @@ export class ModePrintMessage extends ProgramMode {
             .addOption(new Option('--vertical-kern-max-offset <n>', 'Sets how close to the line above vertical kerning will move lines up').argParser(Number).default(0))
             .addOption(new Option('-W, --whitespace-character <char>', 'The character to use to replace the whitespace character.'))
             .addOption(new Option('-P, --padding-character <char>', 'The character to use when adding padding (see --padding-mode).'))
+
+            .addOption(new Option('-F, --foreground-colour <HexColour>', 'Forground colour to use in console output'))
+            .addOption(new Option('-Fx, --foreground-effect <Mode>', 'Effect to apply to foreground colour').choices(['solid', 'cycle', 'fadeToBlack', 'fadeToWhite']).default('solid'))
+            .addOption(new Option('-B, --background-colour <HexColour>', 'Background colour to use in console output'))
+            .addOption(new Option('-Bx, --background-effect <Mode>', 'Effect to apply to background colour').choices(['solid', 'cycle', 'fadeToBlack', 'fadeToWhite']).default('fadeToBlack'))
+
+            .addOption(new Option('--force-interactive-mode', 'Forces interactive stdin mode, even if IsTTY returns false').hideHelp(true))
+            .addOption(new Option('--no-force-interactive-mode', 'Forces non-interactive stdin mode, even if IsTTY returns false').hideHelp(true))
+
             .addOption(new Option('--verbose', 'Generate extra diagnostic messages (printed to stderr)'));
         // .addArgument(new Argument('<message...>','The text to fligletify (yes, that is a word)'))
     }
@@ -139,6 +160,149 @@ export class ModePrintMessage extends ProgramMode {
                 flm.characterReplacement.setWhitespaceCharacter(this.options.whitespaceCharacter);
             }
 
+            // flm.stylization.add(
+            //     new SingleColourBGStyle('RedPadding', {applyTo: 'leftPadding', colour: '#ff0000'})
+            // );
+            //
+            // flm.stylization.add(
+            //     new SingleColourBGStyle('BluePadding', {applyTo: 'rightPadding', colour: '#0000ff'})
+            // );
+            //
+            // flm.stylization.add(
+            //     new SingleColourBGStyle('WhiteBG', {applyTo: 'standard', colour: '#ffffff'})
+            // );
+
+            if (this.options.foregroundColour) {
+                if (this.options.foregroundColour === 'rainbow') {
+                    flm.stylization.add(
+                        new CyclicRasterisationStyle('Rainbow', {
+                            colourMode: 'foreground',
+                            paletteWidth: 'longestLine',
+                            startColour: '#f00'
+                        })
+                    );
+                } else {
+                    switch (this.options.foregroundEffect) {
+                        case 'solid':
+                            flm.stylization.add(
+                                new SingleColourStyle('ForegroundSolid', {
+                                    colour: this.options.foregroundColour,
+                                    mode: 'foreground'
+                                })
+                            );
+                            break;
+                        case 'cycle':
+                            flm.stylization.add(
+                                new CyclicRasterisationStyle('Rainbow', {
+                                    colourMode: 'foreground',
+                                    paletteWidth: 'longestLine',
+                                    startColour: this.options.foregroundColour
+                                })
+                            );
+                            break;
+                        case 'fadeToBlack':
+                            flm.stylization.add(
+                                new TwoColourStyle('ForegroundFadeToBlack', {
+                                    mode: 'foreground',
+                                    startColour: this.options.foregroundColour,
+                                    endColour: '#000'
+                                })
+                            );
+                            break;
+                        case 'fadeToWhite':
+                            flm.stylization.add(
+                                new TwoColourStyle('ForegroundFadeToWhite', {
+                                    mode: 'foreground',
+                                    startColour: this.options.foregroundColour,
+                                    endColour: '#fff'
+                                })
+                            );
+                            break;
+                    }
+                }
+            }
+
+            if (this.options.backgroundColour) {
+                if (this.options.backgroundColour === 'rainbow') {
+                    flm.stylization.add(
+                        new CyclicRasterisationStyle('Rainbow', {
+                            colourMode: 'background',
+                            paletteWidth: 'renderWidth',
+                            startColour: '#f00'
+                        })
+                    );
+                } else {
+                    switch (this.options.backgroundEffect) {
+                        case 'solid':
+                            flm.stylization.add(
+                                new SingleColourStyle('BackgroundSolid', {
+                                    colour: this.options.backgroundColour,
+                                    mode: 'background'
+                                })
+                            );
+                            break;
+                        case 'cycle':
+                            flm.stylization.add(
+                                new CyclicRasterisationStyle('BGRainbow', {
+                                    colourMode: 'background',
+                                    paletteWidth: 'renderWidth',
+                                    startColour: this.options.backgroundColour
+                                })
+                            );
+                            break;
+                        case 'fadeToBlack':
+                            flm.stylization.add(
+                                new TwoColourStyle('BackgroundgroundFadeToBlack', {
+                                    mode: 'background',
+                                    startColour: this.options.backgroundColour,
+                                    endColour: '#000'
+                                })
+                            );
+                            break;
+                        case 'fadeToWhite':
+                            flm.stylization.add(
+                                new TwoColourStyle('BackgroundFadeToWhite', {
+                                    mode: 'background',
+                                    startColour: this.options.backgroundColour,
+                                    endColour: '#fff'
+                                })
+                            );
+                            break;
+                    }
+                }
+            }
+
+            // flm.stylization.add(
+            //     new TwoColourBGStyle('BlackRed', {
+            //         applyTo: 'all',
+            //         endColour: '#002',
+            //         startColour: '#00f'
+            //     })
+            // );
+            // flm.stylization.add(
+            //     new TwoColourBGStyle('BlackRed', {
+            //         applyTo: 'leftPadding',
+            //         endColour: '#00f',
+            //         startColour: '#fff'
+            //     })
+            // );
+            // flm.stylization.add(
+            //     new SingleColourBGStyle('BlackRed', {
+            //         applyTo: 'standard',
+            //         colour: '#00f'
+            //     })
+            // );
+            // flm.stylization.add(new SingleColourFGStyle('Black FG', { applyTo: 'standard', colour: '#fff' }));
+
+            // flm.stylization.add(
+            //     new CyclicRasterisationStyle('Rainbow', {
+            //         colourMode: 'foreground',
+            //         paletteWidth: 'longestLine',
+            //         bgColour: '#000',
+            //         startColour: '#f00'
+            //     })
+            // );
+
             IOUtils.stdout(flm.renderText(message, this._font), { newlineCount: 1 });
         }
     }
@@ -152,7 +316,7 @@ export class ModePrintMessage extends ProgramMode {
 
             // And if that fails, try to load from local disk
             if (this._font === undefined) {
-                this._font = this.fontFileUtils.loadFontFile(new URL(this.options.font, import.meta.url));
+                this._font = this.fontFileUtils.loadFontFile(new URL(this.options.font, pathToFileURL(process.cwd()) + '/'));
             }
         }
 
@@ -167,13 +331,20 @@ export class ModePrintMessage extends ProgramMode {
         if (this.options.remainingArguments !== undefined && this.options.remainingArguments.length !== 0) {
             this.renderMessage(this.options.remainingArguments.join(' '));
         } else {
-            IOUtils.stdout('Reading from stdin.  Type something and hit return.  Use \\n for newlines.  Press Ctrl-C to quit.', { newlineCount: 2 });
-            IOUtils.stdout('figlet> ', { newlineCount: 0 });
-
-            IOUtils.bindStdin((data) => {
+            const isTty = IOUtils.bindStdin((data) => {
                 this.renderMessage(data.toString().trimEnd());
-                IOUtils.stdout('figlet> ', { newlineCount: 0 });
             });
+
+            if (isTty || this.options.forceInteractiveMode) {
+                IOUtils.stdout('Reading from stdin in interactive mode.  Type something and hit return.  Use \\n for newlines.  Press Ctrl-C to quit.', { newlineCount: 2 });
+                IOUtils.stdout('figlet-ts> ', { newlineCount: 0 });
+                // Bind a pseudo-prompt
+                IOUtils.bindStdin(() => {
+                    IOUtils.stdout('figlet-ts> ', { newlineCount: 0 });
+                });
+            } else {
+                IOUtils.info('Reading from stdin in non-interactive mode');
+            }
         }
     }
 }

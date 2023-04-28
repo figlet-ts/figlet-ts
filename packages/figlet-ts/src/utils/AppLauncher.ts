@@ -13,7 +13,7 @@ export default function run(pathToFontsRoot?: URL, ...args: string[]) {
         .name('figlet-ts')
         .description('Typescript implementation of figlet')
         .addHelpText('beforeAll', getFigletCLIVersionString)
-        .version('___FIGLET_TS_VERSION___', '-v, --version');
+        .version(`${getFigletCLIVersionString()}`, '-v, --version');
 
     new ModePrintMessage(program, { isDefault: true }, pathToFontsRoot);
     new ModeDemoFonts(program, {}, pathToFontsRoot);

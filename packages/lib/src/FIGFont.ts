@@ -5,7 +5,7 @@ import { FIGFontError, FIGFontIllegalHardblankCharacter } from './errors/FIGFont
 import { FIGCharacter } from './FIGCharacter';
 import { FontLayoutManager } from './FontLayoutManager';
 import { LayoutRulesBase } from './layoutRules/LayoutRulesBase';
-import { ASCIICodes } from './utils/ASCIICodes';
+import { CharacterCodes } from './utils/CharacterCodes';
 
 export class FIGFont extends LayoutRulesBase {
     private _headerRaw = '';
@@ -53,15 +53,15 @@ export class FIGFont extends LayoutRulesBase {
     public set hardblankCharacter(characterCode: number) {
         if (characterCode === null) {
             throw new FIGFontIllegalHardblankCharacter('NULL');
-        } else if (characterCode === ASCIICodes.NULL) {
+        } else if (characterCode === CharacterCodes.ASCII_NULL) {
             throw new FIGFontIllegalHardblankCharacter('Null (ASCII Code 0)');
-        } else if (characterCode === ASCIICodes.LINE_FEED) {
+        } else if (characterCode === CharacterCodes.ASCII_LINE_FEED) {
             // Newline = invalid character
             throw new FIGFontIllegalHardblankCharacter('Newline (ASCII Code 10)');
-        } else if (characterCode === ASCIICodes.CARRIAGE_RETURN) {
+        } else if (characterCode === CharacterCodes.ASCII_CARRIAGE_RETURN) {
             // Carriage return = invalid character
             throw new FIGFontIllegalHardblankCharacter('Carriage Return (ASCII Code 13)');
-        } else if (characterCode === ASCIICodes.SPACE) {
+        } else if (characterCode === CharacterCodes.ASCII_SPACE) {
             // Space = invalid character
             throw new FIGFontIllegalHardblankCharacter('Space (ASCII Code 32)');
         } else if (characterCode > 127 || characterCode < 0) {

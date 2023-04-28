@@ -35,14 +35,21 @@ export class FontFileUtils {
     getRandomFont(): FIGFont | undefined {
         const randomFont = this._installedFontList.getRandomFont();
 
+        if (randomFont) {
+            IOUtils.info(`Selected random font: ${randomFont?.name}`);
+        } else {
+            IOUtils.warn('Could not select a random font.  Check that you have fonts installed.');
+        }
+
         return randomFont === undefined ? undefined : this.loadFontFile(randomFont.absolutePath);
     }
 
     loadFontFile(flfPath: URL): FIGFont | undefined {
         if (!fs.existsSync(flfPath)) {
-            IOUtils.stderr(`File Not Found: ${flfPath}`, { showPrefix: true });
+            IOUtils.error(`File Not Found: ${flfPath}`);
             return undefined;
         }
+
         return FLFParser.parse(fs.readFileSync(flfPath).toString()).font;
     }
 }

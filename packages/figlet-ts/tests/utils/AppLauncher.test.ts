@@ -23,12 +23,12 @@ describe('Testing App Launcher', () => {
         processExitSpy.mockReset();
     });
 
-    test('Launching No Params Mode', () => {
+    test('Launching No Params - Forced Interactive Mode', () => {
         const stdoutWriteSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => {
             return true;
         });
 
-        expect(() => appLauncher.default(assetsOneFontPath)).not.toThrow();
+        expect(() => appLauncher.default(assetsOneFontPath, process.argv[0], process.argv[1], '--force-interactive-mode')).not.toThrow();
         process.stdin.pause();
 
         expect(stdoutWriteSpy).toHaveBeenCalledTimes(3);

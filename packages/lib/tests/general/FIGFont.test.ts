@@ -4,16 +4,16 @@ import path from 'path';
 import { FIGFont, FLFParser } from '../../src';
 import { FIGFontLayoutRule } from '../../src/enums/FIGFontLayoutRule';
 import { FIGFontIllegalHardblankCharacter } from '../../src/errors/FIGFontErrors';
-import { ASCIICodes } from '../../src/utils/ASCIICodes';
+import { CharacterCodes } from '../../src/utils/CharacterCodes';
 
 describe('Hardblank Tests', () => {
     test('Invalid hardblanks', () => {
         // @ts-expect-error Need to allow passing null (despite the function requiring a number) to test defense against null in JS use
         expect(() => (new FIGFont().hardblankCharacter = null)).toThrowError(FIGFontIllegalHardblankCharacter);
-        expect(() => (new FIGFont().hardblankCharacter = ASCIICodes.NULL)).toThrowError(FIGFontIllegalHardblankCharacter);
-        expect(() => (new FIGFont().hardblankCharacter = ASCIICodes.SPACE)).toThrowError(FIGFontIllegalHardblankCharacter);
-        expect(() => (new FIGFont().hardblankCharacter = ASCIICodes.CARRIAGE_RETURN)).toThrowError(FIGFontIllegalHardblankCharacter);
-        expect(() => (new FIGFont().hardblankCharacter = ASCIICodes.LINE_FEED)).toThrowError(FIGFontIllegalHardblankCharacter);
+        expect(() => (new FIGFont().hardblankCharacter = CharacterCodes.ASCII_NULL)).toThrowError(FIGFontIllegalHardblankCharacter);
+        expect(() => (new FIGFont().hardblankCharacter = CharacterCodes.ASCII_SPACE)).toThrowError(FIGFontIllegalHardblankCharacter);
+        expect(() => (new FIGFont().hardblankCharacter = CharacterCodes.ASCII_CARRIAGE_RETURN)).toThrowError(FIGFontIllegalHardblankCharacter);
+        expect(() => (new FIGFont().hardblankCharacter = CharacterCodes.ASCII_LINE_FEED)).toThrowError(FIGFontIllegalHardblankCharacter);
         expect(() => (new FIGFont().hardblankCharacter = -1)).toThrowError(FIGFontIllegalHardblankCharacter);
         expect(() => (new FIGFont().hardblankCharacter = 155)).toThrowError(FIGFontIllegalHardblankCharacter);
     });

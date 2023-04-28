@@ -48,7 +48,7 @@ export class ModeDemoFonts extends ProgramMode {
 
                         if (err instanceof Error) {
                             errMessage = `Error parsing ${f.absolutePath}: ${err.message}`;
-                            IOUtils.stderr(errMessage);
+                            IOUtils.error(errMessage);
                         }
                     }
                 }
