@@ -39,8 +39,8 @@ export class FontLayoutManagerOptions extends LayoutRulesBase {
     _renderingWidth: number | undefined;
     _renderingAlignment: FontLayoutHorizontalAlignment = FontLayoutHorizontalAlignment.FONT_DEFAULT;
     _renderingHorizontalPaddingMode: FontLayoutHorizontalPaddingMode = FontLayoutHorizontalPaddingMode.DEFAULT;
-    _renderingPaddingCharacter: string = ' ';
-    _renderingWhitespaceCharacter: string = ' ';
+    _renderingPaddingCharacter: string = String.fromCharCode(CharacterCodes.ASCII_SPACE);
+    _renderingWhitespaceCharacter: string = String.fromCharCode(CharacterCodes.ASCII_SPACE);
     _renderingPreserveAspectRatio: boolean = false;
 
     _renderingHorizontalSmushPlusModeEnabled: boolean = false;

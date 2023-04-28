@@ -1,13 +1,11 @@
-import { CanvasContext, CanvasPixelContext, Stylizer } from '@figlet-ts/lib';
+import { CanvasContext, CanvasPixelContext, RasterisationContext, Stylizer } from '@figlet-ts/lib';
 import chalk from 'chalk';
 import tinycolor from 'tinycolor2';
 
 export type CyclicRasterisationStyleOptions = {
     startColour: string;
     colourMode: 'foreground' | 'background';
-    paletteWidth: 'canvasWidth' | 'longestLine';
-    fgColour?: string;
-    bgColour?: string;
+    paletteWidth: 'renderWidth' | 'longestLine';
 };
 export class CyclicRasterisationStyle extends Stylizer {
     private readonly _startColour: tinycolor.Instance;
@@ -19,14 +17,12 @@ export class CyclicRasterisationStyle extends Stylizer {
         super(styleName);
         this._options = options;
         this._startColour = tinycolor(options.startColour);
-
-        this._debug(`Created palette with ${this._palette.length} colours for a canvas that is ${this._layoutRules?.getRenderingWidth()} wide.`);
     }
 
-    init(canvasContext: CanvasContext): void {
+    init(canvasContext: CanvasContext, rasterisationContext: RasterisationContext): void {
         switch (this._options.paletteWidth) {
-            case 'canvasWidth':
-                this._numColours = canvasContext.width;
+            case 'renderWidth':
+                this._numColours = rasterisationContext.width;
                 break;
             case 'longestLine':
                 this._numColours = canvasContext.maxSubCanvasWidth;
@@ -38,6 +34,8 @@ export class CyclicRasterisationStyle extends Stylizer {
         for (let i = 0; i < this._numColours; i++) {
             this._palette.push(this._startColour.clone().spin(Math.ceil(stepSize * i)));
         }
+
+        this._debug(`Created palette with ${this._palette.length} colours for a canvas that is ${this._layoutRules?.getRenderingWidth()} wide (longest line = ${canvasContext.maxSubCanvasWidth})`);
     }
 
     applyStyle(character: string, pixelContext: CanvasPixelContext): string {
@@ -53,16 +51,6 @@ export class CyclicRasterisationStyle extends Stylizer {
                     break;
             }
         }
-
-        if (this._options.bgColour) {
-            retVal = chalk.bgHex(this._options.bgColour)(retVal);
-        }
-
-        if (this._options.fgColour) {
-            retVal = chalk.hex(this._options.fgColour)(retVal);
-        }
-
-        retVal = chalk.bold(retVal);
 
         return retVal;
     }

@@ -9,9 +9,6 @@ export type StdOutOptions = IOOptions & {
     replacer?: (t: string) => string;
     clearLine?: boolean;
 };
-export type StdErrOptions = IOOptions & {
-    showPrefix?: boolean;
-};
 export type ProcessExitOptions = {
     returnCode?: number;
     errorMessage?: string;
@@ -31,11 +28,19 @@ export class IOUtils {
         }
     }
 
-    static stderr(message: string, opts: StdErrOptions = { newlineCount: 1 }): void {
-        if (opts.showPrefix) {
-            process.stderr.write(`${chalk.bold.red('ERROR: ')} `);
-        }
+    static info(message: string, opts: IOOptions = { newlineCount: 1 }): void {
+        IOUtils.stderr(`${chalk.bold.blueBright('INFO: ')} ${message}`, opts);
+    }
 
+    static warn(message: string, opts: IOOptions = { newlineCount: 1 }): void {
+        IOUtils.stderr(`${chalk.bold.yellow('WARN: ')} ${message}`, opts);
+    }
+
+    static error(message: string, opts: IOOptions = { newlineCount: 1 }): void {
+        IOUtils.stderr(`${chalk.bold.red('ERROR: ')} ${message}`, opts);
+    }
+
+    static stderr(message: string, opts: IOOptions = { newlineCount: 1 }): void {
         process.stderr.write(message);
 
         if (opts.newlineCount) {
@@ -62,11 +67,12 @@ export class IOUtils {
 
     static quit(opts: ProcessExitOptions = {}): never {
         if (opts.showVersionInfo) {
-            IOUtils.stderr(getFigletCLIVersionString(), { newlineCount: 1, showPrefix: false });
+            process.stderr.write(getFigletCLIVersionString());
+            process.stderr.write('\n');
         }
 
         if (opts.errorMessage) {
-            IOUtils.stderr(opts.errorMessage, { newlineCount: 2, showPrefix: true });
+            IOUtils.error(opts.errorMessage, { newlineCount: 2 });
         }
 
         process.exit(opts.returnCode);

@@ -1,3 +1,4 @@
+import { CharacterCodes } from '../../utils/CharacterCodes';
 import { Matrix } from '../../utils/MatrixUtils';
 import { CanvasPixel } from '../CanvasPixel';
 
@@ -6,13 +7,20 @@ export interface IRasterisationContext {
     height: number;
     lineNumber: number;
 
+    currentLineLeftPaddingLength: number;
+    currentLineRightPaddingLength: number;
+
+    minLeftPaddingLength: number;
+    maxLeftPaddingLength: number;
+    minRightPaddingLength: number;
+    maxRightPaddingLength: number;
+
     xPos: number;
     yPos: number;
 }
 
 export class RasterisationContext implements IRasterisationContext {
     private _matrix: Matrix<CanvasPixel>;
-    private _currentLineNumber: number = 0;
 
     xPos: number = 0;
     yPos: number = 0;
@@ -36,6 +44,54 @@ export class RasterisationContext implements IRasterisationContext {
     }
 
     get lineNumber(): number {
-        return this._currentLineNumber;
+        return this.yPos;
+    }
+
+    get currentLineLeftPaddingLength(): number {
+        return this._matrix[this.yPos].filter((x) => x.character === CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER).length;
+    }
+
+    get currentLineRightPaddingLength(): number {
+        return this._matrix[this.yPos].filter((x) => x.character === CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER).length;
+    }
+
+    get minLeftPaddingLength(): number {
+        let retVal = Infinity;
+
+        for (const m of this._matrix) {
+            retVal = Math.min(retVal, m.filter((x) => x.character === CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER).length);
+        }
+
+        return retVal;
+    }
+
+    get maxLeftPaddingLength(): number {
+        let retVal = 0;
+
+        for (const m of this._matrix) {
+            retVal = Math.max(retVal, m.filter((x) => x.character === CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER).length);
+        }
+
+        return retVal;
+    }
+
+    get minRightPaddingLength(): number {
+        let retVal = Infinity;
+
+        for (const m of this._matrix) {
+            retVal = Math.min(retVal, m.filter((x) => x.character === CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER).length);
+        }
+
+        return retVal;
+    }
+
+    get maxRightPaddingLength(): number {
+        let retVal = 0;
+
+        for (const m of this._matrix) {
+            retVal = Math.max(retVal, m.filter((x) => x.character === CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER).length);
+        }
+
+        return retVal;
     }
 }

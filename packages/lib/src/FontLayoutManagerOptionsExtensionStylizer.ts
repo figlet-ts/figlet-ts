@@ -4,7 +4,7 @@ import { Stylizer } from './rendering/Stylizer';
 export class FontLayoutManagerOptionsExtensionStylizer {
     constructor(private readonly _driverOptions: FontLayoutManagerOptions) {}
 
-    set(stylizer: Stylizer) {
+    add(stylizer: Stylizer) {
         this._driverOptions._renderingStylizers.push(stylizer);
     }
 

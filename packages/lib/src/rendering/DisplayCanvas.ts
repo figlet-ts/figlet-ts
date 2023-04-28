@@ -184,7 +184,7 @@ export class DisplayCanvas extends Debuggable {
             switch (alignment) {
                 case FontLayoutHorizontalAlignment.LEFT_ALIGN:
                     if (horizontalPaddingMode === FontLayoutHorizontalPaddingMode.FULL_PADDING) {
-                        buff[i].push(...new Array(targetWidth - arrayWidth).fill(new CanvasPixel(CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER)));
+                        buff[i].push(...new Array(targetWidth - arrayWidth).fill(0).map(() => new CanvasPixel(CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER)));
                     }
                     break;
 
@@ -194,10 +194,10 @@ export class DisplayCanvas extends Debuggable {
                         const rightPad = Math.ceil((targetWidth - arrayWidth) / 2);
                         if (horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_PADDING) {
                             if (horizontalPaddingMode === FontLayoutHorizontalPaddingMode.FULL_PADDING || horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_LEFT_PADDING) {
-                                buff[i].unshift(...new Array(leftPad).fill(new CanvasPixel(CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER)));
+                                buff[i].unshift(...new Array(leftPad).fill(0).map(() => new CanvasPixel(CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER)));
                             }
                             if (horizontalPaddingMode === FontLayoutHorizontalPaddingMode.FULL_PADDING || horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_RIGHT_PADDING) {
-                                buff[i].push(...new Array(rightPad).fill(new CanvasPixel(CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER)));
+                                buff[i].push(...new Array(rightPad).fill(0).map(() => new CanvasPixel(CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER)));
                             }
                         }
                     }
@@ -205,7 +205,7 @@ export class DisplayCanvas extends Debuggable {
 
                 case FontLayoutHorizontalAlignment.RIGHT_ALIGN:
                     if (horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_PADDING && horizontalPaddingMode !== FontLayoutHorizontalPaddingMode.NO_LEFT_PADDING) {
-                        buff[i].unshift(...new Array(Math.floor(targetWidth - arrayWidth)).fill(new CanvasPixel(CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER)));
+                        buff[i].unshift(...new Array(Math.floor(targetWidth - arrayWidth)).fill(0).map(() => new CanvasPixel(CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER)));
                     }
                     break;
                 default:
@@ -378,7 +378,7 @@ export class DisplayCanvas extends Debuggable {
         const stylizers = this._flm.options.getStylizers();
         // Initialise the stylizers
         for (const stylizer of stylizers) {
-            stylizer.libInternalInit(this._flm.options, new CanvasContext(this));
+            stylizer.libInternalInit(this._flm.options, new CanvasContext(this), new RasterisationContext(matrix, 0, 0));
         }
 
         for (const currentLineArray of matrix) {

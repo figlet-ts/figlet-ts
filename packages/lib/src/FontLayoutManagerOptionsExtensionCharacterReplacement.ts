@@ -44,7 +44,7 @@ export class FontLayoutManagerOptionsExtensionCharacterReplacement {
     }
 
     resetPaddingCharacter() {
-        this.setPaddingCharacter(' ');
+        this.setPaddingCharacter(String.fromCharCode(CharacterCodes.ASCII_SPACE));
     }
 
     setPaddingCharacter(char: string) {

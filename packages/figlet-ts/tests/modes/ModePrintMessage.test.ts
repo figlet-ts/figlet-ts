@@ -27,7 +27,7 @@ function doTest(args: string[]) {
 
 describe('One Font Tests', () => {
     doTest([process.argv[0], process.argv[1], 'print', '-f', 'standard', 'Text']);
-    doTest([process.argv[0], process.argv[1], 'print', '-f', '../../../../assets/fonts/core/mini.flf', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-f', '../../assets/fonts/core/mini.flf', 'Text']);
     doTest([process.argv[0], process.argv[1], 'print', '-r', 'Text']);
     doTest([process.argv[0], process.argv[1], 'print', '-a', 'left', 'Text']);
     doTest([process.argv[0], process.argv[1], 'print', '-a', 'centre', 'Text']);
@@ -49,7 +49,22 @@ describe('One Font Tests', () => {
     doTest([process.argv[0], process.argv[1], 'print', '-V', 'kern', 'Text']);
     doTest([process.argv[0], process.argv[1], 'print', '-V', 'smush', 'Text']);
     doTest([process.argv[0], process.argv[1], 'print', '-V', 'font', 'Text']);
+    // Character Replacement Tests
     doTest([process.argv[0], process.argv[1], 'print', '-W', '.', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-P', '.', 'Text']);
+    // Colourful Tests
+    doTest([process.argv[0], process.argv[1], 'print', '-F', '44f', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-F', 'rainbow', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-F', '44f', '-Fx', 'solid', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-F', '44f', '-Fx', 'cycle', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-F', '44f', '-Fx', 'fadeToBlack', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-F', '44f', '-Fx', 'fadeToWhite', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-B', '44f', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-B', 'rainbow', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-B', '44f', '-Bx', 'solid', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-B', '44f', '-Bx', 'cycle', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-B', '44f', '-Bx', 'fadeToBlack', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-B', '44f', '-Bx', 'fadeToWhite', 'Text']);
 });
 
 describe('Error handling', () => {
@@ -58,12 +73,9 @@ describe('Error handling', () => {
         processExitSpy.mockImplementation((opts) => {
             throw new Error('IOUtils.quit called: ' + opts);
         });
-        const stderrWriteSpy = jest.spyOn(process.stderr, 'write').mockImplementation(
-            // eslint-disable-next-line
-            (d) => {
-                return true;
-            }
-        );
+        const stderrWriteSpy = jest.spyOn(process.stderr, 'write').mockImplementation(() => {
+            return true;
+        });
 
         const program = new Command();
 
@@ -91,7 +103,38 @@ describe('Interactive Mode Tests', () => {
         const stdinBindSpy = jest.spyOn(process.stdin, 'on');
         const stdinUnbindSpy = jest.spyOn(process.stdin, 'removeAllListeners');
 
-        program.parse([process.argv[0], process.argv[1], 'print']);
+        program.parse([process.argv[0], process.argv[1], 'print', '--force-interactive-mode']);
+
+        process.stdin.emit('data', Buffer.from([45, 13]));
+
+        IOUtils.unbindStdin();
+
+        expect(stdinBindSpy).toHaveBeenCalledTimes(2);
+        expect(stdinUnbindSpy).toHaveBeenCalledTimes(1);
+        expect(stdoutSpy).toHaveBeenCalledTimes(4);
+
+        stdinBindSpy.mockReset();
+        stdinUnbindSpy.mockReset();
+        stdoutSpy.mockReset();
+    });
+});
+
+describe('Non-Interactive Mode Tests', () => {
+    test('Check stdin/stdout handling', () => {
+        const program = new Command();
+
+        new ModePrintMessage(program, {}, assetsOneFontPath);
+
+        const stdoutSpy = jest.spyOn(IOUtils, 'stdout').mockImplementation(() => {
+            return;
+        });
+        const infoSpy = jest.spyOn(IOUtils, 'info').mockImplementation(() => {
+            return;
+        });
+        const stdinBindSpy = jest.spyOn(process.stdin, 'on');
+        const stdinUnbindSpy = jest.spyOn(process.stdin, 'removeAllListeners');
+
+        program.parse([process.argv[0], process.argv[1], 'print', '--no-force-interactive-mode']);
 
         process.stdin.emit('data', Buffer.from([45, 13]));
 
@@ -99,10 +142,12 @@ describe('Interactive Mode Tests', () => {
 
         expect(stdinBindSpy).toHaveBeenCalledTimes(1);
         expect(stdinUnbindSpy).toHaveBeenCalledTimes(1);
-        expect(stdoutSpy).toHaveBeenCalledTimes(4);
+        expect(stdoutSpy).toHaveBeenCalledTimes(1);
+        expect(infoSpy).toHaveBeenCalledTimes(1);
 
         stdinBindSpy.mockReset();
         stdinUnbindSpy.mockReset();
+        infoSpy.mockReset();
         stdoutSpy.mockReset();
     });
 });

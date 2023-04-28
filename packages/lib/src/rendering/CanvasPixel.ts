@@ -6,8 +6,16 @@ import { WordContext } from './contexts/WordContext';
 
 import { RasterisationContext } from './contexts/RasterisationContext';
 
+export interface CharacterContext {
+    isPadding: boolean;
+    isLeftPadding: boolean;
+    isRightPadding: boolean;
+    isStandardCharacter: boolean;
+}
+
 export interface CanvasPixelContext {
     figCharacter?: FIGCharacter;
+    characterContext?: CharacterContext;
     canvasContext?: CanvasContext;
     subCanvasContext?: SubCanvasContext;
     rasterizeContext?: RasterisationContext;
@@ -21,6 +29,25 @@ export class CanvasPixel {
     public context: CanvasPixelContext = {};
 
     constructor(public readonly character: number, context: CanvasPixelContext = {}) {
+        const characterContext: CharacterContext = {
+            isLeftPadding: false,
+            isPadding: false,
+            isRightPadding: false,
+            isStandardCharacter: false
+        };
+
+        if (this.character === CharacterCodes.FIGLET_TS_LEFT_PADDING_MARKER) {
+            characterContext.isPadding = true;
+            characterContext.isLeftPadding = true;
+        } else if (this.character === CharacterCodes.FIGLET_TS_RIGHT_PADDING_MARKER) {
+            characterContext.isPadding = true;
+            characterContext.isRightPadding = true;
+        } else {
+            characterContext.isStandardCharacter = true;
+        }
+
+        context.characterContext = characterContext;
+
         this.addContext(context);
     }
 
