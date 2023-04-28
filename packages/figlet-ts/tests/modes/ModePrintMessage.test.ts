@@ -65,6 +65,32 @@ describe('One Font Tests', () => {
     doTest([process.argv[0], process.argv[1], 'print', '-B', '44f', '-Bx', 'cycle', 'Text']);
     doTest([process.argv[0], process.argv[1], 'print', '-B', '44f', '-Bx', 'fadeToBlack', 'Text']);
     doTest([process.argv[0], process.argv[1], 'print', '-B', '44f', '-Bx', 'fadeToWhite', 'Text']);
+    // Quickstyle Tests
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'rainbow', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'rainbow1', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'rainbow2', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'rainbowbg', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'rainbowbg1', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'rainbowbg2', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'error', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'error1', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'error2', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'warn', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'warn1', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'warn2', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'info', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'info1', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'info2', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'success', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'success1', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'success2', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'grey', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'grey1', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'grey2', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'grey3', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'grey4', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'grey5', 'Text']);
+    doTest([process.argv[0], process.argv[1], 'print', '-q', 'grey6', 'Text']);
 });
 
 describe('Error handling', () => {
