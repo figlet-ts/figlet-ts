@@ -1,5 +1,11 @@
 # @figlet-ts/cli
 
+## 0.6.0
+
+### Minor Changes
+
+-   3e25238: Introduced Stylizers, allowing modification of the output as it's being rendered
+
 ## 0.5.2
 
 ### Patch Changes

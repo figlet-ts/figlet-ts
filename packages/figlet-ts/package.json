@@ -2,7 +2,7 @@
     "name": "figlet-ts",
     "author": "Andrew B. Dicks",
     "license": "MIT",
-    "version": "0.5.2",
+    "version": "0.6.0",
     "description": "Figlet command-line application, authored in Typescript",
     "repository": {
         "type": "git",
@@ -49,7 +49,7 @@
     "targets": {},
     "devDependencies": {
         "@andrewdicks/rollup-plugin-copy-files-plus": "^1.0.2",
-        "@figlet-ts/lib": "^0.4.0",
+        "@figlet-ts/lib": "^0.5.0",
         "@rollup/plugin-commonjs": "^24.0.1",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.0.1",

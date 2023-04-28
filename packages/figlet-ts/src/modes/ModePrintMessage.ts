@@ -25,6 +25,35 @@ export interface ModePrintMessageOptions extends ProgramModeOptions {
     backgroundColour?: 'rainbow' | string;
     backgroundEffect: 'solid' | 'cycle' | 'fadeToBlack' | 'fadeToWhite';
     forceInteractiveMode: boolean;
+    quickstyle?:
+        | 'rainbow'
+        | 'rainbow1'
+        | 'rainbow2'
+        | 'rainbowbg'
+        | 'rainbowbg1'
+        | 'rainbowbg2'
+        | 'error'
+        | 'error1'
+        | 'error2'
+        | 'warn'
+        | 'warn1'
+        | 'warn2'
+        | 'info'
+        | 'info1'
+        | 'info2'
+        | 'success'
+        | 'success1'
+        | 'success2'
+        | 'mono'
+        | 'mono1'
+        | 'mono2'
+        | 'grey'
+        | 'grey1'
+        | 'grey2'
+        | 'grey3'
+        | 'grey4'
+        | 'grey5'
+        | 'grey6';
 }
 
 export class ModePrintMessage extends ProgramMode {
@@ -63,6 +92,39 @@ export class ModePrintMessage extends ProgramMode {
             .addOption(new Option('-W, --whitespace-character <char>', 'The character to use to replace the whitespace character.'))
             .addOption(new Option('-P, --padding-character <char>', 'The character to use when adding padding (see --padding-mode).'))
 
+            .addOption(
+                new Option('-q, --quickstyle <QuickstyleName>', 'Convenient set of styles for easier fancy formatting').choices([
+                    'rainbow',
+                    'rainbow1',
+                    'rainbow2',
+                    'rainbowbg',
+                    'rainbowbg1',
+                    'rainbowbg2',
+                    'error',
+                    'error1',
+                    'error2',
+                    'warn',
+                    'warn1',
+                    'warn2',
+                    'info',
+                    'info1',
+                    'info2',
+                    'success',
+                    'success1',
+                    'success2',
+                    'mono',
+                    'mono1',
+                    'mono2',
+                    'grey',
+                    'grey1',
+                    'grey2',
+                    'grey3',
+                    'grey4',
+                    'grey5',
+                    'grey6'
+                ])
+            )
+
             .addOption(new Option('-F, --foreground-colour <HexColour>', 'Forground colour to use in console output'))
             .addOption(new Option('-Fx, --foreground-effect <Mode>', 'Effect to apply to foreground colour').choices(['solid', 'cycle', 'fadeToBlack', 'fadeToWhite']).default('solid'))
             .addOption(new Option('-B, --background-colour <HexColour>', 'Background colour to use in console output'))
@@ -80,6 +142,150 @@ export class ModePrintMessage extends ProgramMode {
 
         if (this._font !== undefined) {
             const flm: FontLayoutManager = new FontLayoutManager();
+
+            if (this.options.quickstyle) {
+                // All current quickstyles use full width as they all try to set nice-looking backgrounds
+                this.options.paddingMode = 'full';
+                switch (this.options.quickstyle) {
+                    case 'error':
+                        this.options.backgroundColour = 'f00';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'solid';
+                        break;
+                    case 'error1':
+                        this.options.backgroundColour = 'd00';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'error2':
+                        this.options.backgroundColour = '400';
+                        this.options.foregroundColour = 'f00';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'warn':
+                        this.options.backgroundColour = 'fcae1e';
+                        this.options.foregroundColour = '000';
+                        this.options.backgroundEffect = 'solid';
+                        break;
+                    case 'warn1':
+                        this.options.backgroundColour = 'd90';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'warn2':
+                        this.options.backgroundColour = '830';
+                        this.options.foregroundColour = 'ff0';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'info':
+                        this.options.backgroundColour = '0df';
+                        this.options.foregroundColour = '000';
+                        this.options.backgroundEffect = 'solid';
+                        break;
+                    case 'info1':
+                        this.options.backgroundColour = '09b';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'info2':
+                        this.options.backgroundColour = '034';
+                        this.options.foregroundColour = '0ff';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'success':
+                        this.options.backgroundColour = '0f0';
+                        this.options.foregroundColour = '000';
+                        this.options.backgroundEffect = 'solid';
+                        break;
+                    case 'success1':
+                        this.options.backgroundColour = '0b0';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'success2':
+                        this.options.backgroundColour = '060';
+                        this.options.foregroundColour = '0f0';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'mono':
+                        this.options.backgroundColour = 'aaa';
+                        this.options.foregroundColour = '000';
+                        this.options.backgroundEffect = 'solid';
+                        break;
+                    case 'mono1':
+                        this.options.backgroundColour = '666';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'mono2':
+                        this.options.backgroundColour = '333';
+                        this.options.foregroundColour = '888';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'rainbow':
+                        this.options.foregroundColour = 'f00';
+                        this.options.foregroundEffect = 'cycle';
+                        break;
+                    case 'rainbow1':
+                        this.options.foregroundColour = '0f0';
+                        this.options.foregroundEffect = 'cycle';
+                        break;
+                    case 'rainbow2':
+                        this.options.foregroundColour = '00f';
+                        this.options.foregroundEffect = 'cycle';
+                        break;
+                    case 'rainbowbg':
+                        this.options.backgroundColour = 'f00';
+                        this.options.foregroundColour = '000';
+                        this.options.backgroundEffect = 'cycle';
+                        break;
+                    case 'rainbowbg1':
+                        this.options.backgroundColour = 'a00';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'cycle';
+                        break;
+                    case 'rainbowbg2':
+                        this.options.backgroundColour = '700';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'cycle';
+                        break;
+                    case 'grey':
+                        this.options.backgroundColour = '333';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'grey1':
+                        this.options.backgroundColour = '333';
+                        this.options.foregroundColour = 'ff7415';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'grey2':
+                        this.options.backgroundColour = '333';
+                        this.options.foregroundColour = '0ff';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'grey3':
+                        this.options.backgroundColour = '333';
+                        this.options.foregroundColour = 'ff0';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'grey4':
+                        this.options.backgroundColour = '333';
+                        this.options.foregroundColour = 'f0f';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'grey5':
+                        this.options.backgroundColour = '333';
+                        this.options.foregroundColour = 'f00';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                    case 'grey6':
+                        this.options.backgroundColour = '333';
+                        this.options.foregroundColour = '0f0';
+                        this.options.backgroundEffect = 'fadeToBlack';
+                        break;
+                }
+            }
 
             if (this.options.width === 0) {
                 flm.width.useTerminalWidth();
@@ -159,18 +365,6 @@ export class ModePrintMessage extends ProgramMode {
             if (this.options.whitespaceCharacter) {
                 flm.characterReplacement.setWhitespaceCharacter(this.options.whitespaceCharacter);
             }
-
-            // flm.stylization.add(
-            //     new SingleColourBGStyle('RedPadding', {applyTo: 'leftPadding', colour: '#ff0000'})
-            // );
-            //
-            // flm.stylization.add(
-            //     new SingleColourBGStyle('BluePadding', {applyTo: 'rightPadding', colour: '#0000ff'})
-            // );
-            //
-            // flm.stylization.add(
-            //     new SingleColourBGStyle('WhiteBG', {applyTo: 'standard', colour: '#ffffff'})
-            // );
 
             if (this.options.foregroundColour) {
                 if (this.options.foregroundColour === 'rainbow') {

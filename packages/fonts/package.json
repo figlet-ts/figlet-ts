@@ -2,7 +2,7 @@
     "name": "@figlet-ts/fonts",
     "author": "Andrew B. Dicks",
     "license": "MIT",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "description": "Bundle of font files for use alongside the figlet-ts lib.  Designed to be tree-shaken to reduce size.",
     "repository": {
         "type": "git",
