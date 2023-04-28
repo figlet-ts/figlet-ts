@@ -1,5 +1,11 @@
 # @figlet-ts/cli
 
+## 0.6.1
+
+### Patch Changes
+
+-   523161f: Add quickstyle support
+
 ## 0.6.0
 
 ### Minor Changes
