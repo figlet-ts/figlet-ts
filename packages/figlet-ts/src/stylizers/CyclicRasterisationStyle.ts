@@ -28,11 +28,11 @@ export class CyclicRasterisationStyle extends Stylizer {
                 this._numColours = canvasContext.maxSubCanvasWidth;
                 break;
         }
-        
+
         this._numColours = Math.max(1, this._numColours);
 
         const stepSize = 360 / this._numColours;
-        
+
         this._startColour.lighten(10);
 
         for (let i = 0; i < this._numColours; i++) {

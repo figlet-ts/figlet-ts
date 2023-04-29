@@ -1,6 +1,5 @@
 ![Figlet TS Logo](../../docs/figlet-ts-demo-03.gif 'Figlet TS')
 
-
 ```text
 
 ______________        ______    _____
