@@ -147,6 +147,33 @@ export class ModePrintMessage extends ProgramMode {
                 // All current quickstyles use full width as they all try to set nice-looking backgrounds
                 this.options.paddingMode = 'full';
                 switch (this.options.quickstyle) {
+                    case 'rainbow':
+                        this.options.foregroundColour = 'f00';
+                        this.options.foregroundEffect = 'cycle';
+                        break;
+                    case 'rainbow1':
+                        this.options.foregroundColour = '0f0';
+                        this.options.foregroundEffect = 'cycle';
+                        break;
+                    case 'rainbow2':
+                        this.options.foregroundColour = '00f';
+                        this.options.foregroundEffect = 'cycle';
+                        break;
+                    case 'rainbowbg':
+                        this.options.backgroundColour = 'f00';
+                        this.options.foregroundColour = '000';
+                        this.options.backgroundEffect = 'cycle';
+                        break;
+                    case 'rainbowbg1':
+                        this.options.backgroundColour = 'a00';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'cycle';
+                        break;
+                    case 'rainbowbg2':
+                        this.options.backgroundColour = '700';
+                        this.options.foregroundColour = 'fff';
+                        this.options.backgroundEffect = 'cycle';
+                        break;
                     case 'error':
                         this.options.backgroundColour = 'f00';
                         this.options.foregroundColour = 'fff';
@@ -221,33 +248,6 @@ export class ModePrintMessage extends ProgramMode {
                         this.options.backgroundColour = '333';
                         this.options.foregroundColour = '888';
                         this.options.backgroundEffect = 'fadeToBlack';
-                        break;
-                    case 'rainbow':
-                        this.options.foregroundColour = 'f00';
-                        this.options.foregroundEffect = 'cycle';
-                        break;
-                    case 'rainbow1':
-                        this.options.foregroundColour = '0f0';
-                        this.options.foregroundEffect = 'cycle';
-                        break;
-                    case 'rainbow2':
-                        this.options.foregroundColour = '00f';
-                        this.options.foregroundEffect = 'cycle';
-                        break;
-                    case 'rainbowbg':
-                        this.options.backgroundColour = 'f00';
-                        this.options.foregroundColour = '000';
-                        this.options.backgroundEffect = 'cycle';
-                        break;
-                    case 'rainbowbg1':
-                        this.options.backgroundColour = 'a00';
-                        this.options.foregroundColour = 'fff';
-                        this.options.backgroundEffect = 'cycle';
-                        break;
-                    case 'rainbowbg2':
-                        this.options.backgroundColour = '700';
-                        this.options.foregroundColour = 'fff';
-                        this.options.backgroundEffect = 'cycle';
                         break;
                     case 'grey':
                         this.options.backgroundColour = '333';
@@ -371,7 +371,7 @@ export class ModePrintMessage extends ProgramMode {
                     flm.stylization.add(
                         new CyclicRasterisationStyle('Rainbow', {
                             colourMode: 'foreground',
-                            paletteWidth: 'longestLine',
+                            paletteWidth: 'renderWidth',
                             startColour: '#f00'
                         })
                     );

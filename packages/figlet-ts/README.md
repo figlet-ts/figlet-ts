@@ -1,3 +1,6 @@
+![Figlet TS Logo](../../docs/figlet-ts-demo-03.gif 'Figlet TS')
+
+
 ```text
 
 ______________        ______    _____
@@ -86,7 +89,7 @@ _  __/   _  / _  /_/ /_  / /  __/ /_    _  ___ __ |/ |/ //  ___(__  )/ /_/ _  / 
 -   ✅ Provide multi-platform command-line tool to generate figlet-powered awesome ASCII text
 -   To support:
     -   ✅ Having fun on the command line
-    -   ✴️ Colourful output
+    -   ✅️ Colourful output
     -   ✴️ Comment-style formatting for use in source code comments
 
 ### Key
