@@ -1,2 +1,3 @@
 assets/** linguist-vendored
+docs/** linguist-vendored
 * text=auto eol=lf
